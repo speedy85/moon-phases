@@ -2,21 +2,29 @@ export default async function handler(req, res) {
     const APP_ID = "27685de2-620d-4c30-894a-d118792447e4";
     const APP_SECRET = "12e081084bdf8470ac719d3c004ad298d54ef92edbfa0be9aab2783401a57bb1cbbeb817fd32e5c841619574bb55c61e5be151ef8131f70dbfe3998f1dca1c836de8f04a56ef1121baccec50a3223c567521a2793e90f0e0c1d90c2350ec52c01349cbf37d9e55b5f307c1f976853d2d";
     
-    // Kluczowe: AstronomyAPI wymaga Base64 z ID:Secret
     const authHeader = Buffer.from(`${APP_ID}:${APP_SECRET}`).toString('base64');
 
     const now = new Date();
-    // Format YYYY-MM-DD
     const dateStr = now.toISOString().split('T')[0];
-    // Format HH:mm:ss (bez milisekund!)
+    // Wycinamy sekundy i milisekundy, zostawiamy tylko HH:mm:ss
     const timeStr = now.toTimeString().split(' ')[0]; 
 
     const lat = 52.2297;
     const lon = 21.0122;
 
     try {
-        // 1. ZAPYTANIE O DANE (Position) - sprawdzamy to najpierw
-        const posUrl = `https://api.astronomyapi.com/api/v2/astronomy/data/position?latitude=${lat}&longitude=${lon}&elevation=1&from_date=${dateStr}&to_date=${dateStr}&time=${timeStr}&bodies=moon`;
+        // 1. BEZPIECZNE BUDOWANIE URL DLA DANYCH
+        const params = new URLSearchParams({
+            latitude: lat.toString(),
+            longitude: lon.toString(),
+            elevation: "1",
+            from_date: dateStr,
+            to_date: dateStr,
+            time: timeStr,
+            bodies: "moon"
+        });
+
+        const posUrl = `https://api.astronomyapi.com/api/v2/astronomy/data/position?${params.toString()}`;
         
         const posRes = await fetch(posUrl, {
             headers: { "Authorization": `Basic ${authHeader}` }
@@ -24,11 +32,11 @@ export default async function handler(req, res) {
 
         if (!posRes.ok) {
             const errorText = await posRes.text();
-            throw new Error(`AstronomyAPI Data Error: ${posRes.status} - ${errorText}`);
+            throw new Error(`Data Error: ${posRes.status} - ${errorText}`);
         }
         const posData = await posRes.json();
 
-        // 2. ZAPYTANIE O OBRAZ
+        // 2. ZAPYTANIE O OBRAZ (POST nie potrzebuje URLSearchParams)
         const imgRes = await fetch("https://api.astronomyapi.com/api/v2/studio/moon-phase", {
             method: "POST",
             headers: { 
@@ -51,18 +59,17 @@ export default async function handler(req, res) {
 
         if (!imgRes.ok) {
             const errorText = await imgRes.text();
-            throw new Error(`AstronomyAPI Image Error: ${imgRes.status} - ${errorText}`);
+            throw new Error(`Image Error: ${imgRes.status} - ${errorText}`);
         }
         const imgData = await imgRes.json();
 
-        // Jeśli wszystko OK, wyślij do przeglądarki
         return res.status(200).json({
             image: imgData.data.imageUrl,
             details: posData.data.table.rows[0].cells[0]
         });
 
     } catch (error) {
-        console.error("LOG SERWERA:", error.message);
+        console.error("SERWER LOG:", error.message);
         return res.status(500).json({ 
             success: false, 
             message: error.message 
