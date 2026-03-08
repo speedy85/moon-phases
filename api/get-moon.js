@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
     // Używamy trim(), aby wyeliminować niewidoczne spacje/entery
-    const APP_ID = "27685de2-620d-4c30-894a-d118792447e4".trim();
-    const APP_SECRET = "12e081084bdf8470ac719d3c004ad298d54ef92edbfa0be9aab2783401a57bb1cbbeb817fd32e5c841619574bb55c61e5be151ef8131f70dbfe3998f1dca1c836de8f04a56ef1121baccec50a3223c567521a2793e90f0e0c1d90c2350ec52c01349cbf37d9e55b5f307c1f976853d2d".trim();
+    const APP_ID = "42a46cd9-70fc-4464-ad8e-d18dc7786969".trim();
+    const APP_SECRET = "12e081084bdf8470ac719d3c004ad298d54ef92edbfa0be9aab2783401a57bb1cbbeb817fd32e5c841619574bb55c61e5be151ef8131f70dbfe3998f1dca1c8331a1e34e30ac773967633eb9fdb236588072f344ad15033f7a2b773ab569dc9585d9afe6eb04f0a03af592262091f90c".trim();
     
     // Tworzymy ciąg "ID:SECRET"
     const credentials = `${APP_ID}:${APP_SECRET}`;
