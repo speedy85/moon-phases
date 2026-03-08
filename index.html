@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faza Księżyca - Dzisiaj</title>
+    <style>
+        body {
+            background-color: #0b0d17;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #moon-image {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            border-radius: 50%;
+            display: block;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .data-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .label { color: #888; font-size: 0.8rem; display: block; }
+        .value { font-weight: bold; color: #fff; }
+        h1 { margin-bottom: 5px; font-size: 1.5rem; }
+        #loading { font-style: italic; color: #aaa; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Dzisiejszy Księżyc</h1>
+        <div id="loading">Pobieranie danych z orbity...</div>
+        
+        <div id="content" style="display: none;">
+            <img id="moon-image" src="" alt="Faza Księżyca">
+            <h2 id="phase-name">---</h2>
+            
+            <div class="data-grid">
+                <div class="data-item"><span class="label">Oświetlenie</span><span class="value" id="illumination">-</span></div>
+                <div class="data-item"><span class="label">Wiek (dni)</span><span class="value" id="age">-</span></div>
+                <div class="data-item"><span class="label">Wschód</span><span class="value" id="rise">-</span></div>
+                <div class="data-item"><span class="label">Zachód</span><span class="value" id="set">-</span></div>
+                <div class="data-item"><span class="label">Azymut</span><span class="value" id="azimuth">-</span></div>
+                <div class="data-item"><span class="label">Wysokość</span><span class="value" id="altitude">-</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
