@@ -3,76 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faza Księżyca - Dzisiaj</title>
+    <title>Księżyc nad Warszawą</title>
     <style>
         body {
-            background-color: #0b0d17;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #05070a;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
         }
-        .card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        .container {
+            background: linear-gradient(145deg, #10141d, #0a0c12);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
             text-align: center;
-            max-width: 400px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 450px;
+            border: 1px solid #1f2633;
         }
+        h1 { font-size: 1.4rem; color: #8a99af; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
         #moon-image {
-            width: 250px;
-            height: 250px;
-            margin: 20px auto;
+            width: 100%;
+            max-width: 300px;
+            height: auto;
             border-radius: 50%;
-            display: block;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.1));
+            margin-bottom: 20px;
         }
-        .data-grid {
+        .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-            text-align: left;
-            font-size: 0.9rem;
+            gap: 12px;
         }
-        .data-item {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 10px;
-            border-radius: 8px;
+        .box {
+            background: rgba(255,255,255,0.03);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
-        .label { color: #888; font-size: 0.8rem; display: block; }
-        .value { font-weight: bold; color: #fff; }
-        h1 { margin-bottom: 5px; font-size: 1.5rem; }
-        #loading { font-style: italic; color: #aaa; }
+        .label { display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 4px; }
+        .val { font-size: 1rem; font-weight: 600; color: #e2e8f0; }
+        #loader { color: #3b82f6; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>Dzisiejszy Księżyc</h1>
-        <div id="loading">Pobieranie danych z orbity...</div>
+<div class="container">
+    <h1>Warszawa • Niebo dzisiaj</h1>
+    <div id="loader">Łączenie ze stacją kosmiczną...</div>
+    
+    <div id="app" style="display: none;">
+        <img id="moon-image" src="" alt="Faza Księżyca">
         
-        <div id="content" style="display: none;">
-            <img id="moon-image" src="" alt="Faza Księżyca">
-            <h2 id="phase-name">---</h2>
-            
-            <div class="data-grid">
-                <div class="data-item"><span class="label">Oświetlenie</span><span class="value" id="illumination">-</span></div>
-                <div class="data-item"><span class="label">Wiek (dni)</span><span class="value" id="age">-</span></div>
-                <div class="data-item"><span class="label">Wschód</span><span class="value" id="rise">-</span></div>
-                <div class="data-item"><span class="label">Zachód</span><span class="value" id="set">-</span></div>
-                <div class="data-item"><span class="label">Azymut</span><span class="value" id="azimuth">-</span></div>
-                <div class="data-item"><span class="label">Wysokość</span><span class="value" id="altitude">-</span></div>
-            </div>
+        <div class="grid">
+            <div class="box"><span class="label">Data</span><span class="val" id="date">-</span></div>
+            <div class="box"><span class="label">Odległość (km)</span><span class="val" id="dist">-</span></div>
+            <div class="box"><span class="label">Azymut</span><span class="val" id="az">-</span></div>
+            <div class="box"><span class="label">Wysokość</span><span class="val" id="alt">-</span></div>
+            <div class="box"><span class="label">Rektascensja</span><span class="val" id="ra">-</span></div>
+            <div class="box"><span class="label">Deklinacja</span><span class="val" id="dec">-</span></div>
         </div>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
