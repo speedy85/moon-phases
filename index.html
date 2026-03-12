@@ -3,102 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Księżyc - IPGeolocation</title>
+    <title>Fazy Księżyca - Warszawa</title>
     <style>
         body { 
-            background: #05070a; 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
-            padding: 20px;
+            background: #05070a; color: white; font-family: 'Segoe UI', sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; margin: 0; padding: 20px;
         }
-
-        /* Kontener trzymający obie ramki obok siebie */
-        .container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 900px;
-        }
-
+        h1 { margin-bottom: 30px; font-weight: 300; color: #f8fafc; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1000px; }
         .card { 
-            background: #111827; 
-            padding: 30px; 
-            border-radius: 24px; 
-            text-align: center; 
-            width: 350px; 
-            border: 1px solid #1f2937; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
+            background: #111827; padding: 25px; border-radius: 24px; 
+            width: 340px; border: 1px solid #1f2937; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
         }
-
-        h2 { margin-top: 0; font-weight: 300; font-size: 1.4rem; color: #f8fafc; }
-
-        #moon-img { 
-            width: 200px; 
-            height: 200px; 
-            border-radius: 50%; 
-            margin: 0 auto 20px auto;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-        }
-
-        /* Ramka na Twoje zdjęcie informacyjne */
-        .info-img {
-            width: 100%;
-            height: auto;
-            border-radius: 12px;
-            margin-top: auto;
-        }
-
+        .card h2 { font-size: 1.2rem; margin-top: 0; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
+        #moon-img { width: 180px; height: 180px; border-radius: 50%; margin: 15px 0; }
+        .info-img { width: 100%; border-radius: 12px; margin-top: 15px; border: 1px solid #374151; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-        
-        .item { 
-            background: #1f2937; 
-            padding: 12px; 
-            border-radius: 12px; 
-            font-size: 0.85rem; 
-            text-align: center;
-        }
-
-        .label { 
-            color: #9ca3af; 
-            display: block; 
-            font-size: 0.7rem; 
-            text-transform: uppercase; 
-            margin-bottom: 4px;
-        }
-
-        #loader { color: #64748b; }
+        .item { background: #1f2937; padding: 10px; border-radius: 12px; font-size: 0.85rem; }
+        .label { color: #6b7280; display: block; font-size: 0.7rem; margin-bottom: 4px; }
+        .value { font-weight: bold; color: #f1f5f9; }
+        #loader { padding: 50px; color: #4b5563; }
     </style>
 </head>
 <body>
 
+    <h1>Przebieg faz dla Warszawy</h1>
+
     <div class="container">
         <div class="card">
-            <div id="loader">Obserwacja nieba...</div>
+            <h2>Aktualny widok</h2>
+            <div id="loader">Pobieranie danych...</div>
             <div id="content" style="display:none">
-                <h2 id="phase">Faza Księżyca</h2>
-                <img id="moon-img" src="" alt="Aktualny wygląd">
-                
+                <div id="phase-name" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">-</div>
+                <img id="moon-img" src="" alt="Księżyc">
                 <div class="grid">
-                    <div class="item"><span class="label">Oświetlenie</span><span id="illu"></span></div>
-                    <div class="item"><span class="label">Dystans</span><span id="dist"></span></div>
-                    <div class="item"><span class="label">Wschód</span><span id="rise"></span></div>
-                    <div class="item"><span class="label">Zachód</span><span id="set"></span></div>
+                    <div class="item"><span class="label">Oświetlenie</span><span class="value" id="illu">-</span></div>
+                    <div class="item"><span class="label">Dystans</span><span class="value" id="dist">-</span></div>
+                    <div class="item"><span class="label">Wschód</span><span class="value" id="rise">-</span></div>
+                    <div class="item"><span class="label">Zachód</span><span class="value" id="set">-</span></div>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h2>Przewodnik po fazach</h2>
-            <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 15px;">Porównaj aktualny widok z cyklem księżycowym:</p>
-            <img class="info-img" src="https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcQBok0KUiVdWKvTXTTNufaKnAZu_ICUx6giRt3nZSgC7g1_qq1W2TI7hLqI0t3grt1hf9Zm92IL_8LUb0ye3fwQ3_m8sDoeFkzVok-Pu25J2i4ehcU" alt="Informacje o fazach">
+            <h2>Cykl księżycowy</h2>
+            <p style="font-size: 0.8rem; color: #6b7280;">Schemat wszystkich faz:</p>
+            <img class="info-img" src="https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcQBok0KUiVdWKvTXTTNufaKnAZu_ICUx6giRt3nZSgC7g1_qq1W2TI7hLqI0t3grt1hf9Zm92IL_8LUb0ye3fwQ3_m8sDoeFkzVok-Pu25J2i4ehcU" alt="Przebieg faz">
         </div>
     </div>
 
@@ -118,19 +70,15 @@
             try {
                 const res = await fetch('https://moon-phases-five.vercel.app/api/get-moon');
                 const d = await res.json();
-                
                 if(d.error) throw new Error(d.error);
 
                 document.getElementById('moon-img').src = d.image;
-                
-                const angielskaNazwa = d.details.phase;
-                document.getElementById('phase').innerText = nazwyFaz[angielskaNazwa] || angielskaNazwa;
-                
+                document.getElementById('phase-name').innerText = nazwyFaz[d.details.phase] || d.details.phase;
                 document.getElementById('illu').innerText = d.details.illumination;
                 document.getElementById('dist').innerText = d.details.distance;
                 document.getElementById('rise').innerText = d.details.rise;
                 document.getElementById('set').innerText = d.details.set;
-                
+
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
             } catch (e) {
