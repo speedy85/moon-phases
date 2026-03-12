@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Księżyc - IPGeolocation</title>
+    <style>
+        body { background: #05070a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #111827; padding: 30px; border-radius: 20px; text-align: center; max-width: 350px; border: 1px solid #1f2937; }
+        img { width: 100%; max-width: 250px; border-radius: 50%; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item { background: #1f2937; padding: 10px; border-radius: 10px; font-size: 0.8rem; }
+        .label { color: #9ca3af; display: block; font-size: 0.7rem; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="card" id="app">
+        <h2 id="phase">Ładowanie...</h2>
+        <img id="moon-img" src="" alt="">
+        <div class="grid" id="details" style="display:none">
+            <div class="item"><span class="label">Oświetlenie</span><span id="illu"></span></div>
+            <div class="item"><span class="label">Dystans</span><span id="dist"></span></div>
+            <div class="item"><span class="label">Wschód</span><span id="rise"></span></div>
+            <div class="item"><span class="label">Zachód</span><span id="set"></span></div>
+        </div>
+    </div>
+
+    <script>
+        async function load() {
+            try {
+                // Link do Twojego Vercela
+                const res = await fetch('https://moon-phases-five.vercel.app/api/get-moon');
+                const d = await res.json();
+                
+                if(d.error) throw new Error(d.error);
+
+                document.getElementById('moon-img').src = d.image;
+                document.getElementById('phase').innerText = d.details.phase;
+                document.getElementById('illu').innerText = d.details.illumination;
+                document.getElementById('dist').innerText = d.details.distance;
+                document.getElementById('rise').innerText = d.details.rise;
+                document.getElementById('set').innerText = d.details.set;
+                
+                document.getElementById('details').style.display = 'grid';
+            } catch (e) {
+                document.getElementById('phase').innerText = "Błąd: " + e.message;
+            }
+        }
+        load();
+    </script>
+</body>
+</html>

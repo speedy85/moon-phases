@@ -1,78 +1,35 @@
 export default async function handler(req, res) {
-    // Używamy trim(), aby wyeliminować niewidoczne spacje/entery
-    const APP_ID = "42a46cd9-70fc-4464-ad8e-d18dc7786969".trim();
-    const APP_SECRET = "12e081084bdf8470ac719d3c004ad298d54ef92edbfa0be9aab2783401a57bb1cbbeb817fd32e5c841619574bb55c61e5be151ef8131f70dbfe3998f1dca1c8331a1e34e30ac773967633eb9fdb236588072f344ad15033f7a2b773ab569dc9585d9afe6eb04f0a03af592262091f90c".trim();
-    
-    // Tworzymy ciąg "ID:SECRET"
-    const credentials = `${APP_ID}:${APP_SECRET}`;
-    const authHeader = Buffer.from(credentials).toString('base64');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
 
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toTimeString().split(' ')[0]; 
+    if (req.method === 'OPTIONS') return res.status(200).end();
 
-    const lat = 52.2297;
-    const lon = 21.0122;
+    // TUTAJ WKLEJ KLUCZ Z IPGEOLOCATION.IO
+    const API_KEY = "daf9b7cccf0247ebb7ade78e1f68c2be"; 
 
     try {
-        // 1. DANE POZYCJI
-        const params = new URLSearchParams({
-            latitude: lat.toString(),
-            longitude: lon.toString(),
-            elevation: "1",
-            from_date: dateStr,
-            to_date: dateStr,
-            time: timeStr,
-            bodies: "moon"
-        });
+        // Zapytanie o dane dla Warszawy
+        const url = `https://api.ipgeolocation.io/astronomy?apiKey=${API_KEY}&location=Warsaw,PL`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
 
-        const posRes = await fetch(`https://api.astronomyapi.com/api/v2/astronomy/data/position?${params.toString()}`, {
-            headers: { 
-                "Authorization": `Basic ${authHeader}` 
+        if (!response.ok) throw new Error(data.message || "Błąd API");
+
+        // Dane z tego API są bardzo proste w obsłudze
+        return res.status(200).json({
+            image: `https://www.icalendar37.net/lunar/api/i.png?lang=pl&month=${new Date().getMonth() + 1}&year=${new Date().getFullYear()}&size=300&light=1&shade=1&text=0`, 
+            details: {
+                phase: data.moon_phase || "Brak danych",
+                illumination: data.moon_illumination + "%",
+                age: data.moon_age,
+                rise: data.moonrise,
+                set: data.moonset,
+                dist: "Dane niedostępne w tym API"
             }
         });
 
-        if (!posRes.ok) {
-            const errorText = await posRes.text();
-            // Logujemy dla Ciebie w Vercel co dokładnie poszło nie tak
-            console.error("Szczegóły błędu 403:", errorText);
-            throw new Error(`Status ${posRes.status}: ${errorText}`);
-        }
-        
-        const posData = await posRes.json();
-
-        // 2. OBRAZ
-        const imgRes = await fetch("https://api.astronomyapi.com/api/v2/studio/moon-phase", {
-            method: "POST",
-            headers: { 
-                "Authorization": `Basic ${authHeader}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                format: "png",
-                style: {
-                    moonStyle: "real",
-                    backgroundStyle: "stars",
-                    backgroundColor: "#000000",
-                    headingColor: "#ffffff",
-                    textColor: "#ffffff"
-                },
-                observer: { latitude: lat, longitude: lon, date: dateStr },
-                view: { type: "portrait-simple", orientation: "north-up" }
-            })
-        });
-
-        const imgData = await imgRes.json();
-
-        return res.status(200).json({
-            image: imgData.data.imageUrl,
-            details: posData.data.table.rows[0].cells[0]
-        });
-
     } catch (error) {
-        return res.status(500).json({ 
-            error: true,
-            message: error.message 
-        });
+        return res.status(500).json({ error: error.message });
     }
 }

@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/public/$1" },
-    { "source": "/api/get-moon", "destination": "/api/get-moon.js" }
+    { "source": "/api/get-moon", "destination": "/api/get-moon.js" },
+    { "source": "/(.*)", "destination": "/public/$1" }
   ]
 }
