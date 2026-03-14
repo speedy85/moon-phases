@@ -134,6 +134,9 @@
 
                 document.getElementById('moon-img').src = d.image;
                 document.getElementById('phase-name').innerText = nazwyFaz[d.details.phase] || d.details.phase;
+                const rawPhase = d.details.phase;
+                document.getElementById('phase-english').innerText = rawPhase.replace(/_/g, ' ');
+                
                 document.getElementById('illu').innerText = d.details.illumination;
                 document.getElementById('dist').innerText = d.details.distance;
                 
