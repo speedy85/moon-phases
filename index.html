@@ -6,7 +6,7 @@
     <title>Fazy Księżyca - Warszawa</title>
     <style>
         body { 
-            background: #05070a; color: white; font-family: 'Segoe UI', sans-serif; 
+            background: #000000; color: white; font-family: 'Segoe UI', sans-serif; 
             display: flex; flex-direction: column; align-items: center; 
             min-height: 100vh; margin: 0; padding: 20px;
         }
@@ -117,6 +117,7 @@
                 const res = await fetch('https://moon-phases-five.vercel.app/api/get-moon');
                 const d = await res.json();
                 if(d.error) throw new Error(d.error);
+
 
                 document.getElementById('moon-img').src = d.image;
                 document.getElementById('phase-name').innerText = nazwyFaz[d.details.phase] || d.details.phase;
