@@ -40,6 +40,15 @@
         .label { color: #6b7280; display: block; font-size: 0.7rem; margin-bottom: 4px; }
         .value { font-weight: bold; color: #f1f5f9; }
         #loader { padding: 50px; color: #4b5563; }
+
+        .english-phase {
+        display: block;
+        font-size: 0.9rem;
+        color: #6b7280; /* Kolor szary, aby nie przytłaczał polskiej nazwy */
+        margin-top: 2px;
+        font-weight: normal;
+        text-transform: italic;
+    }
     </style>
 </head>
 <body>
@@ -52,7 +61,11 @@
             <div id="loader">Pobieranie danych...</div>
             <div id="content" style="display:none">
                 <div id="visibility-badge">Status</div>
-                <div id="phase-name" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 10px;">-</div>
+                
+                <div style="margin-bottom: 15px;">
+                    <div id="phase-name" style="font-size: 1.4rem; font-weight: bold; color: #fff;">-</div>
+                    <div id="phase-english" class="english-phase">-</div>
+                </div>
                 <img id="moon-img" src="" alt="Księżyc">
                 <div class="grid">
                     <div class="item"><span class="label">Oświetlenie</span><span class="value" id="illu">-</span></div>
