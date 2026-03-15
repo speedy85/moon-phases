@@ -169,78 +169,55 @@
             badge.className = isVisible ? "visible" : "hidden";
         }
 
-       async function load() {
-            try {
-                // 1. Pobieramy dane aktualne (to co miałeś)
-                const res = await fetch('https://moon-phases-five.vercel.app/api/get-moon');
-                const d = await res.json();
-                if(d.error) throw new Error(d.error);
+        async function load() {
+    try {
+        const res = await fetch('https://moon-phases-five.vercel.app/api/get-moon');
+        const d = await res.json();
+        if(d.error) throw new Error(d.error);
 
-                // --- TWOJA LOGIKA OBRAZKA I STATUSU (zostaje bez zmian) ---
-                const rawPhase = d.details.phase;
-                document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
-                document.getElementById('phase-english').innerText = rawPhase.replace(/_/g, ' ');
-                const nazwaPliku = plikiZdjec[rawPhase] || (rawPhase.replace(/_/g, '-') + ".jpg");
-                document.getElementById('moon-img').src = "images/" + nazwaPliku;
-                document.getElementById('illu').innerText = d.details.illumination;
-                document.getElementById('dist').innerText = d.details.distance;
-                document.getElementById('rise').innerText = d.details.rise;
-                document.getElementById('set').innerText = d.details.set;
-                checkVisibility(d.details.rise, d.details.set);
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
+        // --- AKTUALIZACJA GŁÓWNEJ KARTY ---
+        const rawPhase = d.details.phase;
+        document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
+        document.getElementById('phase-english').innerText = rawPhase.replace(/_/g, ' ');
+        
+        const nazwaPliku = plikiZdjec[rawPhase] || (rawPhase.replace(/_/g, '-') + ".jpg");
+        document.getElementById('moon-img').src = "images/" + nazwaPliku;
+        
+        document.getElementById('illu').innerText = d.details.illumination;
+        document.getElementById('dist').innerText = d.details.distance;
+        document.getElementById('rise').innerText = d.details.rise;
+        document.getElementById('set').innerText = d.details.set;
 
-                // --- NOWA LOGIKA: NAJBLIŻSZE FAZY ---
-                // Generujemy fazy na podstawie aktualnej daty
-                renderUpcomingPhases();
+        checkVisibility(d.details.rise, d.details.set);
 
-            } catch (e) {
-                document.getElementById('loader').innerText = "Błąd: " + e.message;
-            }
-        }
+        // --- AKTUALIZACJA SEKCJI NAJBLIŻSZYCH FAZ ---
+        const upcomingContainer = document.getElementById('upcoming-phases');
+        upcomingContainer.innerHTML = ''; // Czyścimy loader
 
-        function renderUpcomingPhases() {
-            const container = document.getElementById('upcoming-phases');
-            container.innerHTML = ''; // Czyścimy loader
-
-            // Wykorzystamy uproszczoną logikę obliczania faz (średni cykl 29.5 dnia)
-            // W profesjonalnych apkach pobiera się to z API, ale tutaj wyliczymy 
-            // przybliżone daty głównych faz dla Warszawy.
+        d.upcoming.forEach(p => {
+            const card = document.createElement('div');
+            // Jeśli daysDiff jest ujemne, dodajemy klasę 'past'
+            const isPast = p.timestamp < 0;
+            card.className = `phase-card ${isPast ? 'past' : ''}`;
             
-            const mainPhases = [
-                { id: "NEW_MOON", label: "Nów", en: "New Moon", offset: -7 },
-                { id: "FIRST_QUARTER", label: "Pierwsza kwadra", en: "First Quarter", offset: 0 },
-                { id: "FULL_MOON", label: "Pełnia", en: "Full Moon", offset: 7 },
-                { id: "LAST_QUARTER", label: "Ostatnia kwadra", en: "Last Quarter", offset: 14 }
-            ];
+            const plName = nazwyFaz[p.name] || p.name;
+            const enName = p.name.replace(/_/g, ' ');
 
-            // Uwaga: Prawdziwe daty faz najlepiej pobierać z API. 
-            // Poniżej symulacja struktury dla 1 poprzedniej i 3 następnych faz:
-            // W prawdziwym wdrożeniu należałoby odpytać API o tablicę 'moon_phases_calendar'
-            
-            const mockData = [
-                { name: "FIRST_QUARTER", date: "2024-05-15", days: "7 dni temu", type: "past" },
-                { name: "FULL_MOON", date: "2024-05-23", days: "Dzisiaj", type: "current" },
-                { name: "LAST_QUARTER", date: "2024-05-30", days: "Za 7 dni", type: "future" },
-                { name: "NEW_MOON", date: "2024-06-06", days: "Za 14 dni", type: "future" }
-            ];
+            card.innerHTML = `
+                <span class="days-offset">${p.daysText}</span>
+                <div class="phase-date">${p.date}</div>
+                <span class="phase-pl">${plName}</span>
+                <span class="phase-en">${enName}</span>
+            `;
+            upcomingContainer.appendChild(card);
+        });
 
-            mockData.forEach(p => {
-                const card = document.createElement('div');
-                card.className = `phase-card ${p.type === 'past' ? 'past' : ''}`;
-                
-                const plName = nazwyFaz[p.name] || p.name;
-                const enName = p.name.replace(/_/g, ' ');
-
-                card.innerHTML = `
-                    <span class="days-offset">${p.days}</span>
-                    <div class="phase-date">${p.date}</div>
-                    <span class="phase-pl">${plName}</span>
-                    <span class="phase-en">${enName}</span>
-                `;
-                container.appendChild(card);
-            });
-        }
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+    } catch (e) {
+        document.getElementById('loader').innerText = "Błąd: " + e.message;
+    }
+}
         load();
     </script>
 </body>
