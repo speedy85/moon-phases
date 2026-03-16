@@ -90,6 +90,16 @@
         .phase-date { font-size: 0.85rem; color: #f1f5f9; margin-bottom: 8px; }
         .phase-pl { font-size: 1rem; font-weight: bold; display: block; }
         .phase-en { font-size: 0.75rem; color: #6b7280; font-style: italic; }
+
+        .mini-moon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 10px auto 0 auto;
+            display: block;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            filter: brightness(0.8); /* Lekko przyciemnione, by nie odciągać uwagi od głównej karty */
+        }
     </style>
 </head>
 <body>
@@ -196,21 +206,25 @@
 
         d.upcoming.forEach(p => {
             const card = document.createElement('div');
-            // Jeśli daysDiff jest ujemne, dodajemy klasę 'past'
             const isPast = p.timestamp < 0;
             card.className = `phase-card ${isPast ? 'past' : ''}`;
             
             const plName = nazwyFaz[p.name] || p.name;
             const enName = p.name.replace(/_/g, ' ');
 
+            // Pobieramy nazwę pliku z Twojego słownika plikiZdjec
+            const nazwaPlikuMini = plikiZdjec[p.name] || (p.name.replace(/_/g, '-') + ".jpg");
+
             card.innerHTML = `
                 <span class="days-offset">${p.daysText}</span>
                 <div class="phase-date">${p.date}</div>
                 <span class="phase-pl">${plName}</span>
                 <span class="phase-en">${enName}</span>
+                <img src="images/${nazwaPlikuMini}" class="mini-moon" alt="${plName}">
             `;
             upcomingContainer.appendChild(card);
         });
+      
 
         document.getElementById('loader').style.display = 'none';
         document.getElementById('content').style.display = 'block';
