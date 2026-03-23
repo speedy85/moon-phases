@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Niebo nad Warszawą</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/astronomy-engine/2.1.19/astronomy.browser.min.js"></script>
+    <script src="https://unpkg.com/astronomy-engine@2.1.19/dist/astronomy.browser.min.js"></script>">
     <style>
         body { background: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1000px; }
@@ -47,25 +47,34 @@
 
         // --- FUNKCJA 1: PLANETY (Niezależna) ---
         async function fetchPlanets() {
+            const container = document.getElementById('planets-list');
             try {
                 const res = await fetch(`https://api.visibleplanets.dev/v2?latitude=${LAT}&longitude=${LON}`);
                 const json = await res.json();
-                const container = document.getElementById('planets-list');
                 container.innerHTML = '';
 
-                if (typeof Astronomy === 'undefined') {
-                    container.innerHTML = "Błąd: Biblioteka astronomiczna nie została załadowana.";
+                // Sprawdzamy dostępność biblioteki pod różnymi nazwami
+                const AstroLib = window.Astronomy;
+                
+                if (!AstroLib) {
+                    container.innerHTML = "<div style='color:#f87171'>Błąd: Biblioteka astronomiczna nie została załadowana. Spróbuj odświeżyć stronę.</div>";
                     return;
                 }
 
-                const obs = new Astronomy.Observer(LAT, LON, 0);
+                const obs = new AstroLib.Observer(LAT, LON, 0);
                 const now = new Date();
 
                 json.data.forEach(p => {
-                    const rise = Astronomy.SearchRiseSet(p.name, obs, 1, now, 1);
-                    const set = Astronomy.SearchRiseSet(p.name, obs, -1, now, 1);
-                    const isUnder = p.altitude < 0;
+                    // Próba obliczenia wschodu/zachodu
+                    let riseTime = "--:--", setTime = "--:--";
+                    try {
+                        const rise = AstroLib.SearchRiseSet(p.name, obs, 1, now, 1);
+                        const set = AstroLib.SearchRiseSet(p.name, obs, -1, now, 1);
+                        if (rise) riseTime = formatT(rise.date);
+                        if (set) setTime = formatT(set.date);
+                    } catch(e) { /* ciche pominięcie błędów dla pojedynczych planet */ }
 
+                    const isUnder = p.altitude < 0;
                     const div = document.createElement('div');
                     div.className = 'small-card';
                     div.style.opacity = isUnder ? "0.4" : "1";
@@ -73,16 +82,16 @@
                         <div class="tag" style="background:${p.naked_eye ? '#1e3a8a':'#374151'}">${p.naked_eye ? 'OKO' : 'TELESKOP'}</div>
                         <div style="font-weight:bold">${planetyPl[p.name] || p.name}</div>
                         <div style="color:#34d399; font-size:12px; margin:5px 0">✨ ${p.constellation}</div>
-                        <div style="color:#fbbf24; font-size:13px">🌅 ${formatT(rise?.date)} — 🌇 ${formatT(set?.date)}</div>
-                        <div style="font-size:11px; margin-top:5px">${isUnder ? 'Pod horyzontem' : 'Widoczna'}</div>
+                        <div style="color:#fbbf24; font-size:13px">🌅 ${riseTime} — 🌇 ${setTime}</div>
+                        <div style="font-size:11px; margin-top:5px; color:#9ca3af">${isUnder ? 'Pod horyzontem' : 'Widoczna na niebie'}</div>
                     `;
                     container.appendChild(div);
                 });
             } catch (e) {
-                document.getElementById('planets-list').innerHTML = "Błąd API Planet.";
+                container.innerHTML = "Błąd połączenia z API Planet.";
+                console.error(e);
             }
         }
-
         // --- FUNKCJA 2: KSIĘŻYC (Niezależna) ---
         async function fetchMoon() {
             try {
