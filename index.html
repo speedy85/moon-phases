@@ -51,36 +51,37 @@
     <div id="upcoming-phases" class="phases-grid"></div>
 
    <script>
-    const LAT = 52.2297; const LON = 21.0122;
+   const LAT = 52.2297; const LON = 21.0122;
     const planetyPl = { "Mercury": "Merkury", "Venus": "Wenus", "Mars": "Mars", "Jupiter": "Jowisz", "Saturn": "Saturn", "Uranus": "Uran", "Neptune": "Neptun" };
-    
-    function formatT(d) { return d ? d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : "--:--"; }
+    const nazwyFaz = { "NEW_MOON": "Nów", "FIRST_QUARTER": "Pierwsza kwadra", "FULL_MOON": "Pełnia", "LAST_QUARTER": "Ostatnia kwadra", "WAXING_CRESCENT": "Przybywający sierp", "WAXING_GIBBOUS": "Przybywający garbaty", "WANING_GIBBOUS": "Ubywający garbaty", "WANING_CRESCENT": "Ubywający sierp" };
+    const plikiZdjec = { "NEW_MOON": "NEW.jpg", "WAXING_CRESCENT": "WAXING-CRESCENT.jpg", "FIRST_QUARTER": "FIRST-QUARTER.jpg", "WAXING_GIBBOUS": "WAXING-GIBBOUS.jpg", "FULL_MOON": "FULL.jpg", "WANING_GIBBOUS": "WANING-GIBBOUS.jpg", "LAST_QUARTER": "THIRD-QUARTER.jpg", "WANING_CRESCENT": "WANING-CRESCENT.jpg" };
 
+    function formatTime(d) { return d ? d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : "--:--"; }
+
+    // --- FUNKCJA PLANET (NIEZALEŻNA) ---
     async function loadVisiblePlanets() {
         const container = document.getElementById('planets-list');
         try {
-            // Pobieramy TYLKO planety aktualnie widoczne (altitude > 0)
             const res = await fetch(`https://api.visibleplanets.dev/v2?latitude=${LAT}&longitude=${LON}`);
             const json = await res.json();
             
             if (!json.data || json.data.length === 0) {
-                container.innerHTML = "<div style='color:#9ca3af; padding:20px;'>Obecnie żadna planeta nie jest widoczna nad Warszawą.</div>";
+                container.innerHTML = "<div>Obecnie żadna planeta nie jest widoczna.</div>";
                 return;
             }
 
             container.innerHTML = '';
             const Astro = window.Astronomy;
-            const obs = Astro ? new Astro.Observer(LAT, LON, 0) : null;
             const now = new Date();
+            const obs = Astro ? new Astro.Observer(LAT, LON, 0) : null;
 
             json.data.forEach(p => {
                 let hoursHTML = "";
-                // Dodajemy godziny tylko jeśli silnik astronomy-engine jest gotowy
                 if (Astro && obs) {
                     try {
                         const rise = Astro.SearchRiseSet(p.name, obs, 1, now, 1);
                         const set = Astro.SearchRiseSet(p.name, obs, -1, now, 1);
-                        hoursHTML = `<div style="color:#fbbf24; font-size:13px; margin-top:5px; font-weight:bold;">🌅 ${formatT(rise?.date)} — 🌇 ${formatT(set?.date)}</div>`;
+                        hoursHTML = `<div style="color:#fbbf24; font-size:13px; margin-top:5px; font-weight:bold;">🌅 ${formatTime(rise?.date)} — 🌇 ${formatTime(set?.date)}</div>`;
                     } catch(e) {}
                 }
 
@@ -88,34 +89,61 @@
                 div.className = 'small-card';
                 div.innerHTML = `
                     <div class="tag" style="background:${p.naked_eye ? '#1e3a8a':'#374151'}; color:white; padding:2px 8px; border-radius:4px; font-size:10px; margin-bottom:8px; display:inline-block;">
-                        ${p.naked_eye ? 'WIDOCZNA GOŁYM OKIEM' : 'WYMAGA TELESKOPU'}
+                        ${p.naked_eye ? 'WIDOCZNA GOŁYM OKIEM' : 'TELESKOP'}
                     </div>
                     <div style="font-weight:bold; font-size:1.2rem;">${planetyPl[p.name] || p.name}</div>
-                    <div style="color:#34d399; font-size:0.9rem; margin:4px 0;">✨ Konstelacja: ${p.constellation}</div>
+                    <div style="color:#34d399; font-size:0.9rem; margin:4px 0;">✨ ${p.constellation}</div>
                     ${hoursHTML}
                 `;
                 container.appendChild(div);
             });
         } catch (e) {
-            container.innerHTML = "Błąd ładowania danych o planetach.";
+            container.innerHTML = "Błąd planet.";
         }
     }
 
-    // Funkcja Księżyca (bez zmian, bo działała)
+    // --- FUNKCJA KSIĘŻYCA (NIEZALEŻNA) ---
     async function fetchMoon() {
         try {
             const res = await fetch('/api/get-moon');
             const d = await res.json();
-            // ... (tutaj Twój działający kod renderowania Księżyca) ...
-            // Upewnij się, że na końcu funkcji fetchMoon wywołujesz:
-            loadVisiblePlanets(); 
+            
+            // Renderowanie głównej karty
+            const rawPhase = d.details.phase;
+            document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
+            document.getElementById('moon-img').src = "images/" + (plikiZdjec[rawPhase] || "NEW.jpg");
+            document.getElementById('illu').innerText = d.details.illumination;
+            document.getElementById('dist').innerText = d.details.distance;
+            document.getElementById('rise').innerText = d.details.rise;
+            document.getElementById('set').innerText = d.details.set;
+
+            // Renderowanie nadchodzących faz
+            const up = document.getElementById('upcoming-phases');
+            up.innerHTML = '';
+            d.upcoming.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'small-card';
+                card.innerHTML = `
+                    <div style="color:#34d399; font-size:0.75rem; font-weight:bold;">${p.daysText}</div>
+                    <div style="font-size:0.85rem; margin:5px 0;">${p.date}</div>
+                    <div style="font-weight:bold;">${nazwyFaz[p.name] || p.name}</div>
+                    <img src="images/${plikiZdjec[p.name] || 'NEW.jpg'}" class="mini-moon">
+                `;
+                up.appendChild(card);
+            });
+
+            document.getElementById('moon-loader').style.display = 'none';
+            document.getElementById('moon-content').style.display = 'block';
         } catch (e) {
-            console.error(e);
-            loadVisiblePlanets(); // Wywołaj planety nawet jeśli Księżyc zawiedzie
+            document.getElementById('moon-loader').innerText = "Błąd API Księżyca.";
         }
     }
 
-    window.onload = fetchMoon;
+    // --- URUCHOMIENIE (WYWOŁUJEMY OBYDWIE NIEZALEŻNIE) ---
+    window.onload = () => {
+        fetchMoon();           // Startuje ładowanie Księżyca
+        loadVisiblePlanets();  // Startuje ładowanie Planet
+    };
    </script>
 
 
