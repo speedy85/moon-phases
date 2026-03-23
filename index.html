@@ -20,7 +20,7 @@
         .tag { font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
         .tag-eye { background: #1e3a8a; color: #93c5fd; }
         .tag-tel { background: #374151; color: #9ca3af; }
-        .mini-moon { width: 45px; height: 45px; border-radius: 50%; margin: 10px auto 0; display: block; }
+        .mini-moon { width: 90px; height: 90px; border-radius: 50%; margin: 10px auto 0; display: block; }
     </style>
 </head>
 <body>
@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <h2 class="section-title">Wszystkie Planety</h2>
+    <h2 class="section-title">Widoczne Planety</h2>
     <div id="planets-list" class="phases-grid">Obliczanie pozycji...</div>
 
     <h2 class="section-title">Nadchodzące fazy</h2>
@@ -58,7 +58,7 @@
 
     function formatTime(d) { return d ? d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : "--:--"; }
 
-    // --- FUNKCJA PLANET (NIEZALEŻNA) ---
+    // --- PLANETY (TYLKO WIDOCZNE, BEZ KONSTELACJI) ---
     async function loadVisiblePlanets() {
         const container = document.getElementById('planets-list');
         try {
@@ -66,7 +66,7 @@
             const json = await res.json();
             
             if (!json.data || json.data.length === 0) {
-                container.innerHTML = "<div>Obecnie żadna planeta nie jest widoczna.</div>";
+                container.innerHTML = "<div style='color:#9ca3af; padding:20px;'>Obecnie żadna planeta nie jest widoczna nad Warszawą.</div>";
                 return;
             }
 
@@ -79,8 +79,8 @@
                 let hoursHTML = "";
                 if (Astro && obs) {
                     try {
-                        const rise = Astro.SearchRiseSet(p.name, obs, 1, now, 1);
-                        const set = Astro.SearchRiseSet(p.name, obs, -1, now, 1);
+                        const rise = Astronomy.SearchRiseSet(p.name, obs, 1, now, 1);
+                        const set = Astronomy.SearchRiseSet(p.name, obs, -1, now, 1);
                         hoursHTML = `<div style="color:#fbbf24; font-size:13px; margin-top:5px; font-weight:bold;">🌅 ${formatTime(rise?.date)} — 🌇 ${formatTime(set?.date)}</div>`;
                     } catch(e) {}
                 }
@@ -92,7 +92,6 @@
                         ${p.naked_eye ? 'WIDOCZNA GOŁYM OKIEM' : 'TELESKOP'}
                     </div>
                     <div style="font-weight:bold; font-size:1.2rem;">${planetyPl[p.name] || p.name}</div>
-                    <div style="color:#34d399; font-size:0.9rem; margin:4px 0;">✨ ${p.constellation}</div>
                     ${hoursHTML}
                 `;
                 container.appendChild(div);
@@ -102,13 +101,12 @@
         }
     }
 
-    // --- FUNKCJA KSIĘŻYCA (NIEZALEŻNA) ---
+    // --- KSIĘŻYC (Niezależny) ---
     async function fetchMoon() {
         try {
             const res = await fetch('/api/get-moon');
             const d = await res.json();
             
-            // Renderowanie głównej karty
             const rawPhase = d.details.phase;
             document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
             document.getElementById('moon-img').src = "images/" + (plikiZdjec[rawPhase] || "NEW.jpg");
@@ -117,7 +115,6 @@
             document.getElementById('rise').innerText = d.details.rise;
             document.getElementById('set').innerText = d.details.set;
 
-            // Renderowanie nadchodzących faz
             const up = document.getElementById('upcoming-phases');
             up.innerHTML = '';
             d.upcoming.forEach(p => {
@@ -139,10 +136,10 @@
         }
     }
 
-    // --- URUCHOMIENIE (WYWOŁUJEMY OBYDWIE NIEZALEŻNIE) ---
+    // --- START ---
     window.onload = () => {
-        fetchMoon();           // Startuje ładowanie Księżyca
-        loadVisiblePlanets();  // Startuje ładowanie Planet
+        fetchMoon();
+        loadVisiblePlanets();
     };
    </script>
 
