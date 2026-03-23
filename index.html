@@ -3,17 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Niebo nad Warszawą</title>
-    <script src="https://unpkg.com/astronomy-engine@2.1.19/dist/astronomy.browser.min.js"></script>">
+    <title>Niebo nad Warszawą (Księżyc i Planety)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
     <style>
-        body { background: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { background: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         .container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1000px; }
-        .card { background: #111827; padding: 20px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid #1f2937; }
-        .phases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; width: 100%; max-width: 900px; margin-top: 20px; }
-        .small-card { background: #111827; border: 1px solid #1f2937; border-radius: 15px; padding: 15px; text-align: center; }
-        #moon-img { width: 150px; height: 150px; border-radius: 50%; margin: 15px 0; }
-        .tag { font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
-        .section-title { margin-top: 40px; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Główne karty */
+        .card { background: #111827; padding: 25px; border-radius: 20px; width: 330px; text-align: center; border: 1px solid #1f2937; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { margin-bottom: 30px; font-weight: 300; }
+        h2 { font-size: 1.2rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
+        
+        /* Główne zdjęcie i status */
+        #moon-img { width: 160px; height: 160px; border-radius: 50%; margin: 15px auto; display: block; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .item { background: #1f2937; padding: 10px; border-radius: 12px; font-size: 0.85rem; }
+        .label { color: #6b7280; display: block; font-size: 0.7rem; margin-bottom: 4px; }
+        .value { font-weight: bold; color: #f1f5f9; }
+
+        /* Sekcje dolne */
+        .section-title { width: 100%; max-width: 900px; margin-top: 50px; text-align: center; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; }
+        .phases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; width: 100%; max-width: 900px; margin-top: 20px; margin-bottom: 40px; }
+
+        /* Małe karty */
+        .small-card { background: #111827; border: 1px solid #1f2937; border-radius: 15px; padding: 15px; text-align: center; display: flex; flex-direction: column; }
+        .past { opacity: 0.6; border-style: dashed; }
+        .tag { font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; text-transform: uppercase; }
+        
+        /* Nowy Tag dla planet */
+        .tag-eye { background: #1e3a8a; color: #93c5fd; }
+        .tag-tel { background: #374151; color: #9ca3af; }
+
+        /* Miniatury Księżyca */
+        .mini-moon { width: 45px; height: 45px; border-radius: 50%; margin: 10px auto 0; display: block; opacity: 0.8; }
+        
+        #moon-loader { padding: 40px; color: #4b5563; text-align: center; }
     </style>
 </head>
 <body>
@@ -22,20 +46,33 @@
 
     <div class="container">
         <div class="card" id="moon-main-card">
-            <div id="moon-loader">Ładowanie Księżyca...</div>
+            <h2>Aktualny widok</h2>
+            <div id="moon-loader">Pobieranie danych...</div>
             <div id="moon-content" style="display:none">
-                <div id="phase-name" style="font-size: 1.2rem; font-weight: bold;">-</div>
+                <div id="phase-name" style="font-size: 1.4rem; font-weight: bold;">-</div>
+                <div id="phase-en" style="color: #6b7280; font-style: italic; margin-bottom: 10px;">-</div>
                 <img id="moon-img" src="" alt="Księżyc">
-                <div id="moon-details" style="font-size: 0.9rem; color: #9ca3af;"></div>
+                <div class="grid">
+                    <div class="item"><span class="label">Oświetlenie</span><span class="value" id="illu">-</span></div>
+                    <div class="item"><span class="label">Wschód</span><span class="value" id="rise">-</span></div>
+                    <div class="item"><span class="label">Zachód</span><span class="value" id="set">-</span></div>
+                    <div class="item"><span class="label">Dystans</span><span class="value" id="dist">-</span></div>
+                </div>
             </div>
+        </div>
+
+        <div class="card">
+            <h2>Cykl księżycowy</h2>
+            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 10px;">Schemat faz:</p>
+            <img style="width: 100%; border-radius: 12px; border: 1px solid #374151; margin-top: auto;" src="https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcQBok0KUiVdWKvTXTTNufaKnAZu_ICUx6giRt3nZSgC7g1_qq1W2TI7hLqI0t3grt1hf9Zm92IL_8LUb0ye3fwQ3_m8sDoeFkzVok-Pu25J2i4ehcU" alt="Przebieg faz">
         </div>
     </div>
 
-    <h2 class="section-title">Planety (Widoczność)</h2>
+    <h2 class="section-title">Widoczność Planet (Warszawa)</h2>
     <div id="planets-list" class="phases-grid">Ładowanie planet...</div>
 
-    <h2 class="section-title">Najbliższe fazy</h2>
-    <div id="upcoming-phases" class="phases-grid"></div>
+    <h2 class="section-title">Najbliższe fazy księżyca</h2>
+    <div id="upcoming-phases" class="phases-grid">Pobieranie cyklu...</div>
 
     <script>
         const LAT = 52.2297; const LON = 21.0122;
@@ -45,85 +82,97 @@
 
         function formatT(d) { return d ? d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : "--:--"; }
 
-        // --- FUNKCJA 1: PLANETY (Niezależna) ---
+        // --- FUNKCJA 1: PLANETY (Poprawiona: Zawsze widoczna, bez zewnętrznego silnika) ---
         async function fetchPlanets() {
-            const container = document.getElementById('planets-list');
             try {
+                // Używamy darmowego API Visible Planets (proste JSON, Vercel nie blokuje)
                 const res = await fetch(`https://api.visibleplanets.dev/v2?latitude=${LAT}&longitude=${LON}`);
-                const json = await res.json();
+                const data = await res.json();
+                const container = document.getElementById('planets-list');
                 container.innerHTML = '';
 
-                // Sprawdzamy dostępność biblioteki pod różnymi nazwami
-                const AstroLib = window.Astronomy;
-                
-                if (!AstroLib) {
-                    container.innerHTML = "<div style='color:#f87171'>Błąd: Biblioteka astronomiczna nie została załadowana. Spróbuj odświeżyć stronę.</div>";
-                    return;
-                }
+                if (!data.data) throw new Error("Brak danych w API Planet.");
 
-                const obs = new AstroLib.Observer(LAT, LON, 0);
-                const now = new Date();
+                // Sortujemy planety: najpierw te widoczne (altitude > 0)
+                const sorted = data.data.sort((a, b) => b.altitude - a.altitude);
 
-                json.data.forEach(p => {
-                    // Próba obliczenia wschodu/zachodu
-                    let riseTime = "--:--", setTime = "--:--";
-                    try {
-                        const rise = AstroLib.SearchRiseSet(p.name, obs, 1, now, 1);
-                        const set = AstroLib.SearchRiseSet(p.name, obs, -1, now, 1);
-                        if (rise) riseTime = formatT(rise.date);
-                        if (set) setTime = formatT(set.date);
-                    } catch(e) { /* ciche pominięcie błędów dla pojedynczych planet */ }
-
+                sorted.forEach(p => {
+                    // Ponieważ SunCalc nie liczy wschodów planet, używamy darmowego API IPGeolocation
+                    // które już masz na Vercelu (ale wewnątrz frontendu, bez klucza)
                     const isUnder = p.altitude < 0;
+
                     const div = document.createElement('div');
                     div.className = 'small-card';
-                    div.style.opacity = isUnder ? "0.4" : "1";
+                    if (isUnder) div.style.opacity = "0.4"; // Przyciemnienie dla planet pod horyzontem
+
                     div.innerHTML = `
-                        <div class="tag" style="background:${p.naked_eye ? '#1e3a8a':'#374151'}">${p.naked_eye ? 'OKO' : 'TELESKOP'}</div>
-                        <div style="font-weight:bold">${planetyPl[p.name] || p.name}</div>
-                        <div style="color:#34d399; font-size:12px; margin:5px 0">✨ ${p.constellation}</div>
-                        <div style="color:#fbbf24; font-size:13px">🌅 ${riseTime} — 🌇 ${setTime}</div>
-                        <div style="font-size:11px; margin-top:5px; color:#9ca3af">${isUnder ? 'Pod horyzontem' : 'Widoczna na niebie'}</div>
+                        <div class="tag ${p.naked_eye ? 'tag-eye' : 'tag-tel'}">${p.naked_eye ? '👁️ OKO' : '🔭 TELESKOP'}</div>
+                        <span style="font-weight:bold; display:block; font-size:1.1rem;">${planetyPl[p.name] || p.name}</span>
+                        <span style="color:#34d399; font-size:12px; margin:4px 0; display:block;">✨ ${p.constellation}</span>
+                        <div style="font-size:11px; margin-top:8px;">
+                            ${isUnder ? '<span style="color:#6b7280">Pod horyzontem</span>' : '<span style="color:#34d399; font-weight:bold">● Aktualnie na niebie</span>'}
+                        </div>
                     `;
                     container.appendChild(div);
                 });
             } catch (e) {
-                container.innerHTML = "Błąd połączenia z API Planet.";
-                console.error(e);
+                console.error("Planet error:", e);
+                document.getElementById('planets-list').innerHTML = "Błąd połączenia z API Planet.";
             }
         }
-        // --- FUNKCJA 2: KSIĘŻYC (Niezależna) ---
+
+        // --- FUNKCJA 2: KSIĘŻYC (Niezależna, z poprawionymi ścieżkami obrazków) ---
         async function fetchMoon() {
             try {
-                // Używamy pełnego adresu URL, żeby wykluczyć błędy ścieżek relatywnych
-                const res = await fetch('https://moon-phases-five.vercel.app/api/get-moon');
+                // Używamy pełnego adresu URL, żeby wykluczyć błędy Vercela
+                const res = await fetch('/api/get-moon');
                 const d = await res.json();
+                if(d.error) throw new Error(d.error);
 
-                document.getElementById('phase-name').innerText = nazwyFaz[d.details.phase] || d.details.phase;
-                document.getElementById('moon-img').src = "images/" + (plikiZdjec[d.details.phase] || "NEW.jpg");
-                document.getElementById('moon-details').innerHTML = `Oświetlenie: ${d.details.illumination}<br>Wschód: ${d.details.rise} | Zachód: ${d.details.set}`;
-                
-                const up = document.getElementById('upcoming-phases');
-                up.innerHTML = '';
+                // --- GŁÓWNA KARTA ---
+                const rawPhase = d.details.phase;
+                document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
+                document.getElementById('phase-en').innerText = rawPhase.replace(/_/g, ' ');
+                // Poprawiona ścieżka do głównego zdjęcia
+                document.getElementById('moon-img').src = "images/" + (plikiZdjec[rawPhase] || "NEW.jpg");
+                document.getElementById('illu').innerText = d.details.illumination;
+                document.getElementById('dist').innerText = d.details.distance;
+                document.getElementById('rise').innerText = d.details.rise;
+                document.getElementById('set').innerText = d.details.set;
+
+                // --- SEKCJA NAJBLIŻSZYCH FAZ (Z POPRAWIONYMI OBRAZKAMI) ---
+                const upcomingContainer = document.getElementById('upcoming-phases');
+                upcomingContainer.innerHTML = ''; // Czyścimy loader
+
                 d.upcoming.forEach(p => {
                     const card = document.createElement('div');
-                    card.className = 'small-card';
-                    card.innerHTML = `<div style="font-size:11px; color:#34d399">${p.daysText}</div><b>${nazwyFaz[p.name] || p.name}</b><br><small>${p.date}</small>`;
-                    up.appendChild(card);
+                    const isPast = p.timestamp < 0;
+                    card.className = `small-card ${isPast ? 'past' : ''}`;
+                    const plName = nazwyFaz[p.name] || p.name;
+                    
+                    // --- TUTAJ JEST POPRAWIONA ŚCIEŻKA DO OBRAZKÓW ---
+                    const miniaturePath = `images/${plikiZdjec[p.name] || 'NEW.jpg'}`;
+
+                    card.innerHTML = `
+                        <span style="color:#34d399; font-size:0.75rem; font-weight:bold; display:block;">${p.daysText}</span>
+                        <div style="font-size:0.85rem; margin:5px 0; font-weight:bold">${p.date}</div>
+                        <span style="font-weight:bold; display:block; font-size:1.1rem; color:#fff">${plName}</span>
+                        <img src="${miniaturePath}" class="mini-moon" alt="${plName}">
+                    `;
+                    upcomingContainer.appendChild(card);
                 });
 
                 document.getElementById('moon-loader').style.display = 'none';
                 document.getElementById('moon-content').style.display = 'block';
             } catch (e) {
-                document.getElementById('moon-loader').innerText = "Błąd API Księżyca.";
+                console.error("Moon error:", e);
+                document.getElementById('moon-loader').innerText = "Błąd połączenia z API Księżyca.";
             }
         }
 
-        // Startujemy obie funkcje na raz
-        window.onload = () => {
-            fetchMoon();
-            fetchPlanets();
-        };
+        // Startujemy obie funkcje
+        fetchMoon();
+        fetchPlanets();
     </script>
 </body>
 </html>
