@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fazy Księżyca - Warszawa</title>
+    <title>Niebo nad Warszawą</title>
     <script src="https://cosinekitty.github.io/astronomy/js/astronomy.browser.min.js"></script>
     <style>
         body { 
@@ -11,280 +11,156 @@
             display: flex; flex-direction: column; align-items: center; 
             min-height: 100vh; margin: 0; padding: 20px;
         }
-        h1 { margin-bottom: 30px; font-weight: 300; color: #f8fafc; text-shadow: 0 0 10px rgba(255,255,255,0.2); text-align: center; }
+        h1 { margin-bottom: 30px; font-weight: 300; color: #f8fafc; text-align: center; }
         .container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; max-width: 1000px; }
+        
         .card { 
             background: #111827; padding: 25px; border-radius: 24px; 
             width: 340px; border: 1px solid #1f2937; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;
-            display: flex; flex-direction: column;
         }
-        .card h2 { font-size: 1.2rem; margin-top: 0; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; }
-        #moon-img { width: 180px; height: 180px; border-radius: 50%; margin: 15px auto; display: block; }
-        .info-img { width: 100%; border-radius: 12px; margin-top: auto; border: 1px solid #374151; }
-        
-        /* Styl dla statusu Widoczności */
+
         #visibility-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            text-transform: uppercase;
+            display: inline-block; padding: 5px 15px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;
         }
         .visible { background: #065f46; color: #34d399; border: 1px solid #059669; }
         .hidden { background: #7f1d1d; color: #f87171; border: 1px solid #b91c1c; }
+
+        #moon-img { width: 180px; height: 180px; border-radius: 50%; margin: 15px auto; display: block; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
         .item { background: #1f2937; padding: 10px; border-radius: 12px; font-size: 0.85rem; }
         .label { color: #6b7280; display: block; font-size: 0.7rem; margin-bottom: 4px; }
         .value { font-weight: bold; color: #f1f5f9; }
+
+        /* Sekcje dolne */
+        .section-title { width: 100%; max-width: 900px; margin-top: 40px; text-align: center; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; }
+        .phases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; width: 100%; max-width: 900px; margin-top: 20px; }
+
+        .small-card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 15px; text-align: center; }
+        .past { opacity: 0.6; border-style: dashed; }
+        
+        /* Planety */
+        .planet-name { font-size: 1.1rem; font-weight: bold; display: block; color: #fff; }
+        .planet-const { color: #34d399; font-size: 0.85rem; margin: 5px 0; display: block; }
+        .planet-hours { color: #fbbf24; font-size: 0.85rem; font-weight: bold; display: block; margin-top: 5px; }
+        .tag { font-size: 0.65rem; font-weight: bold; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+        .eye { background: #1e3a8a; color: #93c5fd; }
+        .tel { background: #374151; color: #9ca3af; }
+
+        .mini-moon { width: 50px; height: 50px; border-radius: 50%; margin: 10px auto 0; display: block; }
         #loader { padding: 50px; color: #4b5563; }
-
-        .english-phase {
-        display: block;
-        font-size: 0.9rem;
-        color: #6b7280; /* Kolor szary, aby nie przytłaczał polskiej nazwy */
-        margin-top: 2px;
-        font-weight: normal;
-        text-transform: italic;
-    }
-
-    /* Nowa sekcja faz */
-        .upcoming-section {
-            width: 100%;
-            max-width: 900px;
-            margin-top: 40px;
-        }
-        .upcoming-section h2 {
-            text-align: center;
-            color: #9ca3af;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 20px;
-        }
-        .phases-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .phase-card {
-            background: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 16px;
-            padding: 15px;
-            text-align: center;
-            transition: transform 0.3s;
-        }
-        .phase-card:hover { transform: translateY(-5px); }
-        .phase-card.past { opacity: 0.7; border-style: dashed; }
-        .days-offset {
-            display: block;
-            font-size: 0.75rem;
-            color: #34d399; /* Zielony dla przyszłości */
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .past .days-offset { color: #94a3b8; } /* Szary dla przeszłości */
-        .phase-date { font-size: 0.85rem; color: #f1f5f9; margin-bottom: 8px; }
-        .phase-pl { font-size: 1rem; font-weight: bold; display: block; }
-        .phase-en { font-size: 0.75rem; color: #6b7280; font-style: italic; }
-
-        .mini-moon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin: 10px auto 0 auto;
-            display: block;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            filter: brightness(0.8); /* Lekko przyciemnione, by nie odciągać uwagi od głównej karty */
-            }
-
-        .planet-hours { 
-            font-size: 0.8rem; 
-            color: #fbbf24; /* Złoty kolor dla godzin widoczności */
-            margin-top: 5px; 
-            font-weight: bold; 
-            display: block;
-        }
-        .planet-coords { border-top: 1px solid #1f2937; margin-top: 10px; padding-top: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>Przebieg faz dla Warszawy</h1>
+    <h1>Niebo nad Warszawą</h1>
 
     <div class="container">
         <div class="card">
-            <h2>Aktualny widok</h2>
             <div id="loader">Pobieranie danych...</div>
             <div id="content" style="display:none">
                 <div id="visibility-badge">Status</div>
-                
-                <div style="margin-bottom: 15px;">
-                    <div id="phase-name" style="font-size: 1.4rem; font-weight: bold; color: #fff;">-</div>
-                    <div id="phase-english" class="english-phase">-</div>
-                </div>
+                <div id="phase-name" style="font-size: 1.4rem; font-weight: bold;">-</div>
+                <div id="phase-english" style="color: #6b7280; font-style: italic; margin-bottom: 10px;">-</div>
                 <img id="moon-img" src="" alt="Księżyc">
                 <div class="grid">
                     <div class="item"><span class="label">Oświetlenie</span><span class="value" id="illu">-</span></div>
-                    <div class="item"><span class="label">Dystans</span><span class="value" id="dist">-</span></div>
                     <div class="item"><span class="label">Wschód</span><span class="value" id="rise">-</span></div>
                     <div class="item"><span class="label">Zachód</span><span class="value" id="set">-</span></div>
+                    <div class="item"><span class="label">Dystans</span><span class="value" id="dist">-</span></div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>Cykl księżycowy</h2>
-            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 10px;">Schemat wszystkich faz:</p>
-            <img class="info-img" src="https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcQBok0KUiVdWKvTXTTNufaKnAZu_ICUx6giRt3nZSgC7g1_qq1W2TI7hLqI0t3grt1hf9Zm92IL_8LUb0ye3fwQ3_m8sDoeFkzVok-Pu25J2i4ehcU" alt="Przebieg faz">
-        </div>
-    </div>
-    <div class="upcoming-section">
-        <h2>Najbliższe fazy księżyca</h2>
-        <div id="upcoming-phases" class="phases-grid">
-            <div style="color: #4b5563; text-align: center; width: 100%;">Obliczanie cyklu...</div>
-        </div>
-    </div>
+    <h2 class="section-title">Najbliższe fazy księżyca</h2>
+    <div id="upcoming-phases" class="phases-grid"></div>
+
+    <h2 class="section-title">Planety nad Warszawą</h2>
+    <div id="planets-list" class="phases-grid"></div>
+
     <script>
-       // Słowniki pomocnicze
-    const nazwyFaz = {
-        "NEW_MOON": "Nów", "FIRST_QUARTER": "Pierwsza kwadra",
-        "FULL_MOON": "Pełnia", "LAST_QUARTER": "Ostatnia kwadra",
-        "WAXING_CRESCENT": "Przybywający sierp", "WAXING_GIBBOUS": "Przybywający garbaty",
-        "WANING_GIBBOUS": "Ubywający garbaty", "WANING_CRESCENT": "Ubywający sierp"
-    };
+        const nazwyFaz = {
+            "NEW_MOON": "Nów", "FIRST_QUARTER": "Pierwsza kwadra", "FULL_MOON": "Pełnia", "LAST_QUARTER": "Ostatnia kwadra",
+            "WAXING_CRESCENT": "Przybywający sierp", "WAXING_GIBBOUS": "Przybywający garbaty",
+            "WANING_GIBBOUS": "Ubywający garbaty", "WANING_CRESCENT": "Ubywający sierp"
+        };
 
-    const plikiZdjec = {
-        "NEW_MOON": "NEW.jpg", "WAXING_CRESCENT": "WAXING-CRESCENT.jpg",
-        "FIRST_QUARTER": "FIRST-QUARTER.jpg", "WAXING_GIBBOUS": "WAXING-GIBBOUS.jpg",
-        "FULL_MOON": "FULL.jpg", "WANING_GIBBOUS": "WANING-GIBBOUS.jpg",
-        "LAST_QUARTER": "THIRD-QUARTER.jpg", "WANING_CRESCENT": "WANING-CRESCENT.jpg"
-    };
+        const plikiZdjec = {
+            "NEW_MOON": "NEW.jpg", "WAXING_CRESCENT": "WAXING-CRESCENT.jpg", "FIRST_QUARTER": "FIRST-QUARTER.jpg",
+            "WAXING_GIBBOUS": "WAXING-GIBBOUS.jpg", "FULL_MOON": "FULL.jpg", "WANING_GIBBOUS": "WANING-GIBBOUS.jpg",
+            "LAST_QUARTER": "THIRD-QUARTER.jpg", "WANING_CRESCENT": "WANING-CRESCENT.jpg"
+        };
 
-    const planetyPl = {
-        "Mercury": "Merkury", "Venus": "Wenus", "Mars": "Mars", 
-        "Jupiter": "Jowisz", "Saturn": "Saturn", "Uranus": "Uran", "Neptune": "Neptun"
-    };
+        const planetyPl = { "Mercury": "Merkury", "Venus": "Wenus", "Mars": "Mars", "Jupiter": "Jowisz", "Saturn": "Saturn", "Uranus": "Uran", "Neptune": "Neptun" };
+        const LAT = 52.2297; const LON = 21.0122;
 
-    const LAT = 52.2297;
-    const LON = 21.0122;
+        function formatTime(date) { return date ? date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : "--:--"; }
 
-    // Funkcja pomocnicza do formatowania godziny
-    function formatTime(date) {
-        if (!date) return "--:--";
-        return date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
-    }
+        async function loadPlanets() {
+            try {
+                const res = await fetch(`https://api.visibleplanets.dev/v2?latitude=${LAT}&longitude=${LON}`);
+                const data = await res.json();
+                const container = document.getElementById('planets-list');
+                container.innerHTML = '';
 
-    function checkVisibility(rise, set) {
-        const now = new Date();
-        const currentTime = now.getHours() * 60 + now.getMinutes();
-        const [riseH, riseM] = rise.split(':').map(Number);
-        const [setH, setM] = set.split(':').map(Number);
-        const riseT = riseH * 60 + riseM;
-        const setT = setH * 60 + setM;
-        const badge = document.getElementById('visibility-badge');
-        const isVisible = (riseT < setT) ? (currentTime >= riseT && currentTime <= setT) : (currentTime >= riseT || currentTime <= setT);
-        badge.innerText = isVisible ? "Nad horyzontem" : "Pod horyzontem";
-        badge.className = isVisible ? "visible" : "hidden";
-    }
+                const observer = new Astronomy.Observer(LAT, LON, 0);
+                const now = new Date();
 
-    // --- OBLICZANIE WIDOCZNOŚCI PLANET ---
-    async function loadPlanets() {
-        try {
-            // Pobieramy stan "na teraz" z API dla azymutu i wysokości
-            const res = await fetch(`https://api.visibleplanets.dev/v2?latitude=${LAT}&longitude=${LON}`);
-            const data = await res.json();
-            const container = document.getElementById('planets-list');
-            container.innerHTML = '';
+                data.data.forEach(p => {
+                    const riseObj = Astronomy.SearchRiseSet(p.name, observer, 1, now, 1);
+                    const setObj = Astronomy.SearchRiseSet(p.name, observer, -1, now, 1);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'small-card';
+                    if (p.altitude < 0) card.style.opacity = "0.4";
 
-            const observer = new Astronomy.Observer(LAT, LON, 0);
-            const date = new Date();
-
-            data.data.forEach(p => {
-                // Obliczamy wschód i zachód za pomocą biblioteki Astronomy Engine
-                const body = p.name; 
-                const riseObj = Astronomy.SearchRiseSet(body, observer, 1, date, 1);
-                const setObj = Astronomy.SearchRiseSet(body, observer, -1, date, 1);
-
-                const card = document.createElement('div');
-                card.className = 'planet-card';
-                // Dodajemy klasę 'past' jeśli planeta jest obecnie pod horyzontem (opcjonalne)
-                if (p.altitude < 0) card.style.opacity = "0.5";
-
-                const namePl = planetyPl[p.name] || p.name;
-                const tagClass = p.naked_eye ? 'eye' : 'tel';
-                const tagText = p.naked_eye ? '👁️ Gołym okiem' : '🔭 Teleskop';
-
-                card.innerHTML = `
-                    <div class="visibility-tag ${tagClass}">${tagText}</div>
-                    <span class="planet-name-pl">${namePl}</span>
-                    <span class="planet-name-en">${p.name}</span>
-                    <span class="constellation">✨ ${p.constellation}</span>
-                    <span class="planet-hours">🌅 ${formatTime(riseObj?.date)} — 🌇 ${formatTime(setObj?.date)}</span>
-                    <div class="planet-coords">
-                        ${p.altitude > 0 ? `Aktualnie: ${Math.round(p.altitude)}° wys.` : '<span style="color:#ef4444">Pod horyzontem</span>'}
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        } catch (e) {
-            console.error("Planet error:", e);
+                    card.innerHTML = `
+                        <div class="tag ${p.naked_eye ? 'eye' : 'tel'}">${p.naked_eye ? '👁️ OKO' : '🔭 TELESKOP'}</div>
+                        <span class="planet-name">${planetyPl[p.name] || p.name}</span>
+                        <span class="planet-const">✨ ${p.constellation}</span>
+                        <span class="planet-hours">🌅 ${formatTime(riseObj?.date)} — 🌇 ${formatTime(setObj?.date)}</span>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) { console.error(e); }
         }
-    }
 
-    // --- GŁÓWNA FUNKCJA ŁADUJĄCA ---
-    async function load() {
-        try {
-            const res = await fetch('https://moon-phases-five.vercel.app/api/get-moon');
-            const d = await res.json();
-            if(d.error) throw new Error(d.error);
+        async function load() {
+            try {
+                const res = await fetch('/api/get-moon');
+                const d = await res.json();
+                
+                document.getElementById('phase-name').innerText = nazwyFaz[d.details.phase] || d.details.phase;
+                document.getElementById('phase-english').innerText = d.details.phase.replace(/_/g, ' ');
+                document.getElementById('moon-img').src = "images/" + (plikiZdjec[d.details.phase] || "NEW.jpg");
+                document.getElementById('illu').innerText = d.details.illumination;
+                document.getElementById('rise').innerText = d.details.rise;
+                document.getElementById('set').innerText = d.details.set;
+                document.getElementById('dist').innerText = d.details.distance;
 
-            // Główna karta Księżyca
-            const rawPhase = d.details.phase;
-            document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
-            document.getElementById('phase-english').innerText = rawPhase.replace(/_/g, ' ');
-            document.getElementById('moon-img').src = "images/" + (plikiZdjec[rawPhase] || "NEW.jpg");
-            document.getElementById('illu').innerText = d.details.illumination;
-            document.getElementById('dist').innerText = d.details.distance;
-            document.getElementById('rise').innerText = d.details.rise;
-            document.getElementById('set').innerText = d.details.set;
+                const upcomingContainer = document.getElementById('upcoming-phases');
+                upcomingContainer.innerHTML = '';
+                d.upcoming.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = `small-card ${p.timestamp < 0 ? 'past' : ''}`;
+                    card.innerHTML = `
+                        <span style="color:#34d399; font-size:0.7rem; font-weight:bold">${p.daysText}</span>
+                        <div style="font-size:0.85rem; margin:5px 0">${p.date}</div>
+                        <span style="font-weight:bold; display:block">${nazwyFaz[p.name] || p.name}</span>
+                        <img src="images/${plikiZdjec[p.name] || 'NEW.jpg'}" class="mini-moon">
+                    `;
+                    upcomingContainer.appendChild(card);
+                });
 
-            checkVisibility(d.details.rise, d.details.set);
-
-            // Fazy najbliższe
-            const upcomingContainer = document.getElementById('upcoming-phases');
-            upcomingContainer.innerHTML = '';
-            d.upcoming.forEach(p => {
-                const card = document.createElement('div');
-                card.className = `phase-card ${p.timestamp < 0 ? 'past' : ''}`;
-                const plName = nazwyFaz[p.name] || p.name;
-                const img = plikiZdjec[p.name] || "NEW.jpg";
-                card.innerHTML = `
-                    <span class="days-offset">${p.daysText}</span>
-                    <div class="phase-date">${p.date}</div>
-                    <span class="phase-pl">${plName}</span>
-                    <span class="phase-en">${p.name.replace(/_/g, ' ')}</span>
-                    <img src="images/${img}" class="mini-moon">
-                `;
-                upcomingContainer.appendChild(card);
-            });
-
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-
-            // Ładowanie planet z nowymi obliczeniami
-            loadPlanets();
-
-        } catch (e) {
-            document.getElementById('loader').innerText = "Błąd: " + e.message;
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                loadPlanets();
+            } catch (e) { document.getElementById('loader').innerText = "Błąd połączenia z API"; }
         }
-    }
-
-    load();
+        load();
     </script>
 </body>
 </html>
