@@ -99,13 +99,9 @@
 
     function formatTime(date) { return date ? date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : "--:--"; }
 
-    // NOWA FUNKCJA CZEKAJĄCA NA BIBLIOTEKĘ
     function waitForAstronomy(callback) {
-        if (typeof Astronomy !== 'undefined') {
-            callback();
-        } else {
-            setTimeout(() => waitForAstronomy(callback), 100);
-        }
+        if (typeof Astronomy !== 'undefined') { callback(); } 
+        else { setTimeout(() => waitForAstronomy(callback), 100); }
     }
 
     async function loadPlanets() {
@@ -115,30 +111,38 @@
             const container = document.getElementById('planets-list');
             container.innerHTML = '';
 
-            // Używamy biblioteki Astronomy dopiero tutaj
             const observer = new Astronomy.Observer(LAT, LON, 0);
             const now = new Date();
 
-            data.data.forEach(p => {
-                // Obliczenia wschodu/zachodu
+            // Sortujemy planety: najpierw te najwyżej na niebie (widoczne), potem reszta
+            const sorted = data.data.sort((a, b) => b.altitude - a.altitude);
+
+            sorted.forEach(p => {
                 const riseObj = Astronomy.SearchRiseSet(p.name, observer, 1, now, 1);
                 const setObj = Astronomy.SearchRiseSet(p.name, observer, -1, now, 1);
                 
                 const card = document.createElement('div');
                 card.className = 'small-card';
-                if (p.altitude < 0) card.style.opacity = "0.4";
+                
+                const isUnder = p.altitude < 0;
+                if (isUnder) card.style.opacity = "0.4"; // Przyciemnienie dla planet pod horyzontem
 
                 card.innerHTML = `
                     <div class="tag ${p.naked_eye ? 'eye' : 'tel'}">${p.naked_eye ? '👁️ OKO' : '🔭 TELESKOP'}</div>
                     <span class="planet-name">${planetyPl[p.name] || p.name}</span>
                     <span class="planet-const">✨ ${p.constellation}</span>
                     <span class="planet-hours">🌅 ${formatTime(riseObj?.date)} — 🌇 ${formatTime(setObj?.date)}</span>
+                    <div style="margin-top:8px; font-size:0.75rem;">
+                        ${isUnder ? 
+                            '<span style="color:#6b7280">Pod horyzontem</span>' : 
+                            '<span style="color:#34d399; font-weight:bold">● Aktualnie widoczna</span>'}
+                    </div>
                 `;
                 container.appendChild(card);
             });
         } catch (e) { 
-            console.error("Planet error:", e); 
-            document.getElementById('planets-list').innerHTML = "Błąd ładowania planet.";
+            console.error(e); 
+            document.getElementById('planets-list').innerHTML = "Błąd ładowania danych o planetach.";
         }
     }
 
@@ -171,8 +175,8 @@
 
             document.getElementById('loader').style.display = 'none';
             document.getElementById('content').style.display = 'block';
-
-            // ZMIANA: Czekamy na bibliotekę zanim załadujemy planety
+            
+            // Czekamy na bibliotekę i ładujemy planety
             waitForAstronomy(loadPlanets);
 
         } catch (e) { 
@@ -180,7 +184,6 @@
             document.getElementById('loader').innerText = "Błąd połączenia z API"; 
         }
     }
-    
     load();
     </script>
 </body>
