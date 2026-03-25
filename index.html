@@ -21,6 +21,37 @@
         .tag-eye { background: #1e3a8a; color: #93c5fd; }
         .tag-tel { background: #374151; color: #9ca3af; }
         .mini-moon { width: 90px; height: 90px; border-radius: 50%; margin: 10px auto 0; display: block; }
+        
+        /* Kontener mapy dostosowany do 360px */
+        .sky-map-wrapper {
+            width: 100%;
+            max-width: 360px; /* Twoje wymaganie dla mobile */
+            margin: 20px auto 50px auto;
+            padding: 0;
+            overflow: hidden;
+            border-radius: 15px;
+            border: 1px solid #1f2937;
+        }
+
+        #stellarium-iframe {
+            width: 100%;
+            height: 450px; /* Wysokość optymalna dla pionowego ekranu */
+            border: none;
+            display: block;
+        }
+
+        /* Jeśli użytkownik ma większy ekran (tablet/PC), pozwólmy mapie urosnąć */
+        @media (min-width: 768px) {
+            .sky-map-wrapper {
+            max-width: 900px;
+            }
+            #stellarium-iframe {
+            height: 600px;
+            }
+        }
+    
+    
+    
     </style>
 </head>
 <body>
@@ -49,6 +80,16 @@
 
     <h2 class="section-title">Nadchodzące fazy</h2>
     <div id="upcoming-phases" class="phases-grid"></div>
+
+
+
+    <h2 class="section-title">Mapa Nieba Live</h2>
+    <div class="sky-map-wrapper">
+        <iframe 
+            src="https://stellarium-web.org/skymap?lat=52.23&lng=21.01&live=true" 
+            id="stellarium-iframe">
+        </iframe>
+    </div>
 
    <script>
    const LAT = 52.2297; const LON = 21.0122;
