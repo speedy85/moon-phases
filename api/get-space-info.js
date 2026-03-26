@@ -48,7 +48,7 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("NEO Error:", e.message); }
 
-        // 3. Ludzie (Poprawione rozpoznawanie stacji)
+        // 3. Ludzie (Maksymalnie uproszczone rozpoznawanie stacji)
         let spaceInfo = { total: 0, iss: 0, tiangong: 0, others: 0 };
         try {
             const astrosRes = await fetch('https://ll.thespacedevs.com/2.2.0/astronaut/?in_space=true&limit=30');
@@ -56,20 +56,25 @@ export default async function handler(req, res) {
                 const data = await astrosRes.json();
                 spaceInfo.total = data.count || 0;
 
-                data.results.forEach(astro => {
-                    // Pobieramy całą historię lotów i szukamy nazwy stacji
-                    const flights = JSON.stringify(astro.flights || []).toLowerCase();
-                    
-                    if (flights.includes("iss") || flights.includes("international space station")) {
-                        spaceInfo.iss++;
-                    } else if (flights.includes("tiangong") || flights.includes("chinese") || flights.includes("tss")) {
-                        spaceInfo.tiangong++;
-                    } else {
-                        spaceInfo.others++;
-                    }
-                });
+                if (data.results) {
+                    data.results.forEach(astro => {
+                        // Sprawdzamy pole spacestation bezpośrednio w obiekcie astronauty
+                        const stationName = astro.spacestation ? astro.spacestation.name.toLowerCase() : "";
+                        
+                        if (stationName.includes("international space station") || stationName.includes("iss")) {
+                            spaceInfo.iss++;
+                        } else if (stationName.includes("tiangong") || stationName.includes("chinese space station")) {
+                            spaceInfo.tiangong++;
+                        } else {
+                            // Jeśli jest w kosmosie, ale nie przypisany do stacji (np. leci w kapsule)
+                            spaceInfo.others++;
+                        }
+                    });
+                }
             }
-        } catch (e) { console.error("SpaceDevs Error:", e.message); }
+        } catch (e) { 
+            console.error("SpaceDevs Error:", e.message);
+        }
 
         res.status(200).json({
             peopleInSpace: spaceInfo.total,
