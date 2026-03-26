@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    const NASA_KEY = "DEMO_KEY"; // Docelowo zmień na swój klucz z api.nasa.gov
+    const NASA_KEY = "8BGxyyHgdKJcxBxXt6UfxKeXr1BgBtYAH12BJhUq"; // Docelowo zmień na swój klucz z api.nasa.gov
 
     try {
         // 1. Pobieranie Zdjęcia Dnia (APOD)
