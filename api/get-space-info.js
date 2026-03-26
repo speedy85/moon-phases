@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         // 3. Pobieranie liczby ludzi (ZMIANA NA HTTPS)
         let spaceStats = { number: 0, people: [] };
         try {
-            const astrosRes = await fetch('https://api.open-notify.org/astros.json');
+            const astrosRes = await fetch('https://api.open-notify.org/astros.json', { cache: 'no-store' });
             if (astrosRes.ok) spaceStats = await astrosRes.json();
         } catch (e) { console.error("Astros Error:", e); }
 
