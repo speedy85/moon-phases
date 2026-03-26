@@ -199,29 +199,46 @@
     
     
     
-    async function fetchSpaceInfo() {
+   async function fetchSpaceInfo() {
     try {
         const res = await fetch('/api/get-space-info');
         const d = await res.json();
 
-        // Tekst o ludziach i asteroidach
-        let asteroidText = d.nearestAsteroid 
-            ? `Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odległości <b>${d.nearestAsteroid.distance}</b>.` 
-            : "Brak danych o asteroidach na dziś.";
+        // 1. Budujemy tekst o ludziach w kosmosie (z podziałem na stacje)
+        let peopleText = `🚀 Dzisiaj w kosmosie przebywa <b>${d.peopleInSpace} osób</b>`;
         
+        if (d.details && d.peopleInSpace > 0) {
+            peopleText += ` (w tym <b>${d.details.iss}</b> na ISS oraz <b>${d.details.tiangong}</b> na chińskiej stacji Tiangong)`;
+        }
+        peopleText += ".<br>";
+
+        // 2. Obsługa asteroidy z ikonką ostrzegawczą
+        let asteroidText = "Brak danych o asteroidach na dziś.";
+        if (d.nearestAsteroid) {
+            const hazardIcon = d.nearestAsteroid.isDangerous ? "⚠️ " : "✅ ";
+            const hazardStyle = d.nearestAsteroid.isDangerous ? "color: #ef4444; font-weight: bold;" : "";
+            
+            asteroidText = `${hazardIcon}Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odległości <b>${d.nearestAsteroid.distance}</b>. 
+                           <span style="${hazardStyle}">${d.nearestAsteroid.isDangerous ? 'Potencjalnie niebezpieczna!' : 'Bezpieczna.'}</span>`;
+        }
+        
+        // 3. Wstrzyknięcie tekstu do HTML
         document.getElementById('space-stats').innerHTML = `
-            🚀 Dzisiaj w kosmosie przebywa <b>${d.peopleInSpace} osób</b>.<br>
+            ${peopleText}
             ☄️ ${asteroidText}<br>
             🌌 Zdjęcie dnia od NASA poniżej:
         `;
 
-        // Zdjęcie dnia
-        document.getElementById('apod-title').innerText = d.apod.title;
-        document.getElementById('apod-img').src = d.apod.url;
-        document.getElementById('apod-container').style.display = 'block';
+        // 4. Zdjęcie dnia (APOD)
+        if (d.apod && d.apod.url) {
+            document.getElementById('apod-title').innerText = d.apod.title;
+            document.getElementById('apod-img').src = d.apod.url;
+            document.getElementById('apod-container').style.display = 'block';
+        }
 
     } catch (e) {
-        document.getElementById('space-stats').innerText = "Nie udało się pobrać wieści z kosmosu.";
+        console.error("Błąd frontu:", e);
+        document.getElementById('space-stats').innerText = "Nie udało się pobrać wieści z orbity. Spróbuj odświeżyć stronę.";
     }
 }
 
