@@ -99,6 +99,15 @@
     </a>
     </div>
 
+    <h2 class="section-title">Centrum Dowodzenia Kosmicznego</h2>
+    <div class="card" style="max-width: 800px; margin-bottom: 20px; text-align: left;">
+    <p id="space-stats" style="line-height: 1.6;">Ładowanie ciekawostek z orbity...</p>
+    <div id="apod-container" style="margin-top: 20px; display: none;">
+        <h4 id="apod-title" style="margin-bottom: 10px; color: #fbbf24;"></h4>
+        <img id="apod-img" src="" style="width: 100%; border-radius: 10px; border: 1px solid #374151;">
+    </div>
+    </div>
+
 
     
 
@@ -187,11 +196,42 @@
             document.getElementById('moon-loader').innerText = "Błąd API Księżyca.";
         }
     }
+    
+    
+    
+    async function fetchSpaceInfo() {
+    try {
+        const res = await fetch('/api/get-space-info');
+        const d = await res.json();
+
+        // Tekst o ludziach i asteroidach
+        let asteroidText = d.nearestAsteroid 
+            ? `Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odległości <b>${d.nearestAsteroid.distance}</b>.` 
+            : "Brak danych o asteroidach na dziś.";
+        
+        document.getElementById('space-stats').innerHTML = `
+            🚀 Dzisiaj w kosmosie przebywa <b>${d.peopleInSpace} osób</b>.<br>
+            ☄️ ${asteroidText}<br>
+            🌌 Zdjęcie dnia od NASA poniżej:
+        `;
+
+        // Zdjęcie dnia
+        document.getElementById('apod-title').innerText = d.apod.title;
+        document.getElementById('apod-img').src = d.apod.url;
+        document.getElementById('apod-container').style.display = 'block';
+
+    } catch (e) {
+        document.getElementById('space-stats').innerText = "Nie udało się pobrać wieści z kosmosu.";
+    }
+}
+
+
 
     // --- START ---
     window.onload = () => {
         fetchMoon();
         loadVisiblePlanets();
+        fetchSpaceInfo();
     };
    </script>
 
