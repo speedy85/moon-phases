@@ -36,12 +36,25 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error("NeoWs Error:", e); }
 
-        // 3. Pobieranie liczby ludzi (ZMIANA NA HTTPS)
+       // 3. Pobieranie liczby ludzi (Nowe, lepsze API: The Space Devs)
         let spaceStats = { number: 0, people: [] };
         try {
-            const astrosRes = await fetch('https://api.open-notify.org/astros.json', { cache: 'no-store' });
-            if (astrosRes.ok) spaceStats = await astrosRes.json();
-        } catch (e) { console.error("Astros Error:", e); }
+            // Pobieramy listę wszystkich osób aktualnie przebywających w kosmosie
+            const astrosRes = await fetch('https://ll.thespacedevs.com/2.2.0/astronaut/?in_space=true&limit=20');
+            if (astrosRes.ok) {
+                const data = await astrosRes.json();
+                spaceStats.number = data.count;
+                spaceStats.people = data.results.map(astronau => ({
+                    name: astronau.name,
+                    craft: astronau.in_space ? "Na orbicie" : "Nieznane"
+                }));
+            }
+        } catch (e) { 
+            console.error("SpaceDevs Error:", e); 
+            // Backup: jeśli nowe API padnie, wpisz ręcznie średnią (np. 10), 
+            // żeby nie straszyć użytkownika zerem.
+            spaceStats.number = "Trwa łączenie..."; 
+        }
 
         // Finalna odpowiedź
         res.status(200).json({
