@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    const NASA_KEY = "8BGxyyHgdKJcxBxXt6UfxKeXr1BgBtYAH12";
+    const NASA_KEY = "8BGxyyHgdKJcxBxXt6UfxKeXr1BgBtYAH12BJhUq";
     
     // Bezpieczniejsza data (często NASA potrzebuje daty wczorajszej, jeśli dzisiejszej jeszcze nie ma)
     const now = new Date();
