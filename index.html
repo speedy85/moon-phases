@@ -112,72 +112,117 @@
     
 
    <script>
-    async function fetchSpaceInfo() {
-    try {
-        const res = await fetch('/api/get-space-info');
-        const d = await res.json();
+    const LAT = 52.2297; 
+    const LON = 21.0122;
+    const planetyPl = { "Mercury": "Merkury", "Venus": "Wenus", "Mars": "Mars", "Jupiter": "Jowisz", "Saturn": "Saturn", "Uranus": "Uran", "Neptune": "Neptun" };
+    const nazwyFaz = { "NEW_MOON": "Nów", "FIRST_QUARTER": "Pierwsza kwadra", "FULL_MOON": "Pełnia", "LAST_QUARTER": "Ostatnia kwadra", "WAXING_CRESCENT": "Przybywający sierp", "WAXING_GIBBOUS": "Przybywający garbaty", "WANING_GIBBOUS": "Ubywający garbaty", "WANING_CRESCENT": "Ubywający sierp" };
+    const plikiZdjec = { "NEW_MOON": "NEW.jpg", "WAXING_CRESCENT": "WAXING-CRESCENT.jpg", "FIRST_QUARTER": "FIRST-QUARTER.jpg", "WAXING_GIBBOUS": "WAXING-GIBBOUS.jpg", "FULL_MOON": "FULL.jpg", "WANING_GIBBOUS": "WANING-GIBBOUS.jpg", "LAST_QUARTER": "THIRD-QUARTER.jpg", "WANING_CRESCENT": "WANING-CRESCENT.jpg" };
 
-        // --- TU BYŁ BŁĄD: Musimy zdefiniować asteroidText przed użyciem ---
-        let asteroidText = "Brak danych o asteroidach na dziś.";
-        if (d.nearestAsteroid) {
-            const hazardIcon = d.nearestAsteroid.isDangerous ? "⚠️ " : "✅ ";
-            asteroidText = `${hazardIcon} Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odległości <b>${d.nearestAsteroid.distance}</b>.`;
-        }
-
-        // 1. Budujemy tekst o ludziach
-        let peopleText = `🚀 Dzisiaj w kosmosie przebywa <b>${d.peopleInSpace} osób</b>`;
-        if (d.details) {
-            peopleText += ` (w tym <b>${d.details.iss}</b> na ISS oraz <b>${d.details.tiangong}</b> na Tiangong)`;
-        }
-        peopleText += ".";
-
-        // 2. Tworzymy listę nazwisk (z zabezpieczeniem przed pustymi danymi)
-        const issNames = (d.names && d.names.iss && d.names.iss.length > 0) ? d.names.iss.join(", ") : "Brak danych";
-        const tianNames = (d.names && d.names.tiangong && d.names.tiangong.length > 0) ? d.names.tiangong.join(", ") : "Brak danych";
-        
-        const namesListHTML = `
-            <div style="font-size: 0.85em; margin-top: 10px; color: #9ca3af; line-height: 1.4;">
-                <details>
-                    <summary style="cursor: pointer; color: #fbbf24;">Pokaż kto jest na orbicie...</summary>
-                    <div style="padding-top: 10px;">
-                        <b>Na ISS:</b> ${issNames}<br>
-                        <b>Na Tiangong:</b> ${tianNames}
-                    </div>
-                </details>
-            </div>
-        `;
-
-        // 3. Wstrzyknięcie do HTML
-        document.getElementById('space-stats').innerHTML = `
-            ${peopleText}
-            ${namesListHTML}
-            <br>
-            ☄️ ${asteroidText}<br>
-            🌌 Zdjęcie dnia od NASA poniżej:
-        `;
-
-        // 4. Zdjęcie dnia (APOD)
-        if (d.apod && d.apod.url) {
-            document.getElementById('apod-title').innerText = d.apod.title;
-            const imgEl = document.getElementById('apod-img');
-            
-            // Jeśli to wideo, podmieniamy obrazek na informację lub iframe
-            if (d.apod.media_type === 'video') {
-                document.getElementById('apod-container').innerHTML = `
-                    <h4 id="apod-title" style="margin-bottom: 10px; color: #fbbf24;">${d.apod.title}</h4>
-                    <iframe src="${d.apod.url}" style="width: 100%; height: 300px; border-radius: 10px; border: none;"></iframe>
-                `;
-            } else {
-                imgEl.src = d.apod.url;
-            }
-            document.getElementById('apod-container').style.display = 'block';
-        }
-
-    } catch (e) {
-        console.error("Błąd frontu:", e);
-        document.getElementById('space-stats').innerText = "Nie udało się pobrać wieści z orbity.";
+    function formatTime(d) { 
+        return d ? d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : "--:--"; 
     }
-}
+
+    async function loadVisiblePlanets() {
+        const container = document.getElementById('planets-list');
+        try {
+            const res = await fetch(`https://api.visibleplanets.dev/v2?latitude=${LAT}&longitude=${LON}`);
+            const json = await res.json();
+            if (!json.data || json.data.length === 0) {
+                container.innerHTML = "<div style='color:#9ca3af; padding:20px;'>Obecnie żadna planeta nie jest widoczna.</div>";
+                return;
+            }
+            container.innerHTML = '';
+            const now = new Date();
+            json.data.forEach(p => {
+                let hoursHTML = "";
+                // Sprawdzamy czy biblioteka Astronomy jest dostępna
+                if (window.Astronomy) {
+                    try {
+                        const obs = new Astronomy.Observer(LAT, LON, 0);
+                        const rise = Astronomy.SearchRiseSet(p.name, obs, 1, now, 1);
+                        const set = Astronomy.SearchRiseSet(p.name, obs, -1, now, 1);
+                        hoursHTML = `<div style="color:#fbbf24; font-size:13px; margin-top:5px; font-weight:bold;">🌅 ${formatTime(rise?.date)} — 🌇 ${formatTime(set?.date)}</div>`;
+                    } catch(e) {}
+                }
+                const div = document.createElement('div');
+                div.className = 'small-card';
+                div.innerHTML = `
+                    <div class="tag" style="background:${p.naked_eye ? '#1e3a8a':'#374151'}; color:white; padding:2px 8px; border-radius:4px; font-size:10px; margin-bottom:8px; display:inline-block;">
+                        ${p.naked_eye ? 'WIDOCZNA GOŁYM OKIEM' : 'TELESKOP'}
+                    </div>
+                    <div style="font-weight:bold; font-size:1.2rem;">${planetyPl[p.name] || p.name}</div>
+                    ${hoursHTML}
+                `;
+                container.appendChild(div);
+            });
+        } catch (e) { container.innerHTML = "Błąd planet."; }
+    }
+
+    async function fetchMoon() {
+        try {
+            const res = await fetch('/api/get-moon');
+            const d = await res.json();
+            const rawPhase = d.details.phase;
+            document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
+            document.getElementById('moon-img').src = "images/" + (plikiZdjec[rawPhase] || "NEW.jpg");
+            document.getElementById('illu').innerText = d.details.illumination;
+            document.getElementById('dist').innerText = d.details.distance;
+            document.getElementById('rise').innerText = d.details.rise;
+            document.getElementById('set').innerText = d.details.set;
+            const up = document.getElementById('upcoming-phases');
+            up.innerHTML = '';
+            d.upcoming.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'small-card';
+                card.innerHTML = `<div style="color:#34d399; font-size:0.75rem; font-weight:bold;">${p.daysText}</div><div style="font-size:0.85rem; margin:5px 0;">${p.date}</div><div style="font-weight:bold;">${nazwyFaz[p.name] || p.name}</div><img src="images/${plikiZdjec[p.name] || 'NEW.jpg'}" class="mini-moon">`;
+                up.appendChild(card);
+            });
+            document.getElementById('moon-loader').style.display = 'none';
+            document.getElementById('moon-content').style.display = 'block';
+        } catch (e) { document.getElementById('moon-loader').innerText = "Błąd API Księżyca."; }
+    }
+
+    async function fetchSpaceInfo() {
+        try {
+            const res = await fetch('/api/get-space-info');
+            const d = await res.json();
+            
+            // Definicja asteroidy
+            let asteroidText = "Brak danych o asteroidach.";
+            if (d.nearestAsteroid) {
+                const icon = d.nearestAsteroid.isDangerous ? "⚠️ " : "✅ ";
+                asteroidText = `${icon} Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odl. <b>${d.nearestAsteroid.distance}</b>.`;
+            }
+
+            // Ludzie i nazwiska
+            let peopleText = `🚀 W kosmosie przebywa <b>${d.peopleInSpace} osób</b>`;
+            if (d.details) peopleText += ` (ISS: <b>${d.details.iss}</b>, Tiangong: <b>${d.details.tiangong}</b>)`;
+            
+            const issNames = (d.names && d.names.iss) ? d.names.iss.join(", ") : "Brak danych";
+            const tianNames = (d.names && d.names.tiangong) ? d.names.tiangong.join(", ") : "Brak danych";
+
+            document.getElementById('space-stats').innerHTML = `
+                ${peopleText}.
+                <details style="font-size:0.85em; margin-top:10px; color:#9ca3af;">
+                    <summary style="cursor:pointer; color:#fbbf24;">Kto jest na orbicie?</summary>
+                    <div style="padding-top:5px;"><b>ISS:</b> ${issNames}<br><b>Tiangong:</b> ${tianNames}</div>
+                </details>
+                <br>☄️ ${asteroidText}<br>🌌 Zdjęcie dnia od NASA:
+            `;
+
+            if (d.apod && d.apod.url) {
+                document.getElementById('apod-title').innerText = d.apod.title;
+                document.getElementById('apod-img').src = d.apod.url;
+                document.getElementById('apod-container').style.display = 'block';
+            }
+        } catch (e) { document.getElementById('space-stats').innerText = "Błąd wieści z orbity."; }
+    }
+
+    window.onload = () => {
+        fetchMoon();
+        loadVisiblePlanets();
+        fetchSpaceInfo();
+    };
    </script>
 
 
