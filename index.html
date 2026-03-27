@@ -112,12 +112,12 @@
     
 
    <script>
- async function fetchSpaceInfo() {
+    async function fetchSpaceInfo() {
     try {
         const res = await fetch('/api/get-space-info');
         const d = await res.json();
 
-        // --- POPRAWKA 1: Definicja asteroidText ---
+        // --- TU BYŁ BŁĄD: Musimy zdefiniować asteroidText przed użyciem ---
         let asteroidText = "Brak danych o asteroidach na dziś.";
         if (d.nearestAsteroid) {
             const hazardIcon = d.nearestAsteroid.isDangerous ? "⚠️ " : "✅ ";
@@ -131,9 +131,9 @@
         }
         peopleText += ".";
 
-        // 2. Tworzymy listę nazwisk
-        const issNames = d.names && d.names.iss ? d.names.iss.join(", ") : "Brak danych";
-        const tianNames = d.names && d.names.tiangong ? d.names.tiangong.join(", ") : "Brak danych";
+        // 2. Tworzymy listę nazwisk (z zabezpieczeniem przed pustymi danymi)
+        const issNames = (d.names && d.names.iss && d.names.iss.length > 0) ? d.names.iss.join(", ") : "Brak danych";
+        const tianNames = (d.names && d.names.tiangong && d.names.tiangong.length > 0) ? d.names.tiangong.join(", ") : "Brak danych";
         
         const namesListHTML = `
             <div style="font-size: 0.85em; margin-top: 10px; color: #9ca3af; line-height: 1.4;">
@@ -156,20 +156,21 @@
             🌌 Zdjęcie dnia od NASA poniżej:
         `;
 
-        // --- POPRAWKA 2: Obsługa wideo w APOD ---
+        // 4. Zdjęcie dnia (APOD)
         if (d.apod && d.apod.url) {
-            const container = document.getElementById('apod-container');
             document.getElementById('apod-title').innerText = d.apod.title;
+            const imgEl = document.getElementById('apod-img');
             
+            // Jeśli to wideo, podmieniamy obrazek na informację lub iframe
             if (d.apod.media_type === 'video') {
-                container.innerHTML = `
-                    <h4 style="margin-bottom: 10px; color: #fbbf24;">${d.apod.title}</h4>
-                    <iframe src="${d.apod.url}" style="width: 100%; height: 350px; border-radius: 10px; border: none;"></iframe>
+                document.getElementById('apod-container').innerHTML = `
+                    <h4 id="apod-title" style="margin-bottom: 10px; color: #fbbf24;">${d.apod.title}</h4>
+                    <iframe src="${d.apod.url}" style="width: 100%; height: 300px; border-radius: 10px; border: none;"></iframe>
                 `;
             } else {
-                document.getElementById('apod-img').src = d.apod.url;
+                imgEl.src = d.apod.url;
             }
-            container.style.display = 'block';
+            document.getElementById('apod-container').style.display = 'block';
         }
 
     } catch (e) {
