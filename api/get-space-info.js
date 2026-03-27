@@ -49,34 +49,48 @@ export default async function handler(req, res) {
         } catch (e) { console.error("NEO Error:", e.message); }
 
        // --- 3. LUDZIE W KOSMOSIE (Powrót do Open Notify z filtracją) ---
-        let spaceInfo = { total: 0, iss: 0, tiangong: 0, others: 0 };
+       // --- 3. LUDZIE W KOSMOSIE (Z nazwiskami) ---
+        let spaceInfo = { 
+            total: 0, 
+            iss: 0, 
+            tiangong: 0, 
+            names: { iss: [], tiangong: [], others: [] } 
+        };
+
         try {
-            // Używamy prostego API, które zawsze podaje nazwę stacji (craft)
             const astrosRes = await fetch('http://api.open-notify.org/astros.json');
             const data = await astrosRes.json();
             
-            if (data.number) {
+            if (data.people) {
                 spaceInfo.total = data.number;
                 data.people.forEach(p => {
                     const craft = p.craft.toLowerCase();
                     if (craft === 'iss') {
                         spaceInfo.iss++;
+                        spaceInfo.names.iss.push(p.name);
                     } else if (craft === 'tiangong' || craft === 'css') {
                         spaceInfo.tiangong++;
+                        spaceInfo.names.tiangong.push(p.name);
                     } else {
-                        spaceInfo.others++;
+                        spaceInfo.names.others.push(p.name);
                     }
                 });
             }
         } catch (e) { 
             console.error("OpenNotify Error:", e.message);
-            // Jeśli padnie, ustawiamy sztywno 11 osób (7 ISS + 3 Tiangong + 1 inne) 
-            // żeby strona nie wyglądała na pustą, dopóki API nie wstanie.
-            spaceInfo = { total: 11, iss: 7, tiangong: 3, others: 1 };
+            // Fallback na wypadek awarii API
+            spaceInfo.total = 10;
+            spaceInfo.names.iss = ["Kjell Lindgren", "Bob Hines", "Jessica Watkins"]; // Przykładowe
         }
+
+        // Pamiętaj, aby w res.status(200).json wysłać nowe pole 'names':
         res.status(200).json({
             peopleInSpace: spaceInfo.total,
-            details: { iss: spaceInfo.iss, tiangong: spaceInfo.tiangong, others: spaceInfo.others },
+            details: { 
+                iss: spaceInfo.iss, 
+                tiangong: spaceInfo.tiangong 
+            },
+            names: spaceInfo.names, // TO DODAJEMY
             apod: apodData,
             nearestAsteroid: nearestAsteroid
         });

@@ -204,27 +204,34 @@
         const res = await fetch('/api/get-space-info');
         const d = await res.json();
 
-        // 1. Budujemy tekst o ludziach w kosmosie (z podziałem na stacje)
+        // 1. Budujemy tekst o ludziach
         let peopleText = `🚀 Dzisiaj w kosmosie przebywa <b>${d.peopleInSpace} osób</b>`;
-        
-        if (d.details && d.peopleInSpace > 0) {
-            peopleText += ` (w tym <b>${d.details.iss}</b> na ISS oraz <b>${d.details.tiangong}</b> na chińskiej stacji Tiangong)`;
+        if (d.details) {
+            peopleText += ` (w tym <b>${d.details.iss}</b> na ISS oraz <b>${d.details.tiangong}</b> na Tiangong)`;
         }
-        peopleText += ".<br>";
+        peopleText += ".";
 
-        // 2. Obsługa asteroidy z ikonką ostrzegawczą
-        let asteroidText = "Brak danych o asteroidach na dziś.";
-        if (d.nearestAsteroid) {
-            const hazardIcon = d.nearestAsteroid.isDangerous ? "⚠️ " : "✅ ";
-            const hazardStyle = d.nearestAsteroid.isDangerous ? "color: #ef4444; font-weight: bold;" : "";
-            
-            asteroidText = `${hazardIcon}Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odległości <b>${d.nearestAsteroid.distance}</b>. 
-                           <span style="${hazardStyle}">${d.nearestAsteroid.isDangerous ? 'Potencjalnie niebezpieczna!' : 'Bezpieczna.'}</span>`;
-        }
+        // 2. Tworzymy listę nazwisk (ukrytą domyślnie)
+        const issNames = d.names.iss.join(", ");
+        const tianNames = d.names.tiangong.join(", ");
         
-        // 3. Wstrzyknięcie tekstu do HTML
+        const namesListHTML = `
+            <div style="font-size: 0.85em; margin-top: 10px; color: #9ca3af; line-height: 1.4;">
+                <details>
+                    <summary style="cursor: pointer; color: #fbbf24;">Pokaż kto jest na orbicie...</summary>
+                    <div style="padding-top: 10px;">
+                        <b>Na ISS:</b> ${issNames || 'Brak danych'}<br>
+                        <b>Na Tiangong:</b> ${tianNames || 'Brak danych'}
+                    </div>
+                </details>
+            </div>
+        `;
+
+        // 3. Wstrzyknięcie do HTML
         document.getElementById('space-stats').innerHTML = `
             ${peopleText}
+            ${namesListHTML}
+            <br>
             ☄️ ${asteroidText}<br>
             🌌 Zdjęcie dnia od NASA poniżej:
         `;
