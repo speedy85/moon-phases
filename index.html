@@ -187,28 +187,45 @@
             const res = await fetch('/api/get-space-info');
             const d = await res.json();
             
-            // Definicja asteroidy
-            let asteroidText = "Brak danych o asteroidach.";
-            if (d.nearestAsteroid) {
-                const icon = d.nearestAsteroid.isDangerous ? "⚠️ " : "✅ ";
-                asteroidText = `${icon} Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odl. <b>${d.nearestAsteroid.distance}</b>.`;
-            }
+            // --- NOWA LOGIKA ASTEROIDY (Aby uniknąć błędu ReferenceError) ---
+        let asteroidText = "Brak danych o asteroidach.";
+        if (d.nearestAsteroid) {
+            const icon = d.nearestAsteroid.isDangerous ? "⚠️ " : "✅ ";
+            asteroidText = `${icon} Najbliższa asteroida <b>${d.nearestAsteroid.name}</b> minie nas o <b>${d.nearestAsteroid.time}</b> w odl. <b>${d.nearestAsteroid.distance}</b>.`;
+        }
 
-            // Ludzie i nazwiska
-            let peopleText = `🚀 W kosmosie przebywa <b>${d.peopleInSpace} osób</b>`;
-            if (d.details) peopleText += ` (ISS: <b>${d.details.iss}</b>, Tiangong: <b>${d.details.tiangong}</b>)`;
+        // --- NOWA LOGIKA LUDZI I NAZWISK ---
+        let peopleText = `🚀 W kosmosie przebywa <b>${d.peopleInSpace} osób</b>`;
+        if (d.details) {
+            peopleText += ` (w tym <b>${d.details.iss}</b> na ISS oraz <b>${d.details.tiangong}</b> na Tiangong)`;
+        }
+
+        // Przygotowanie list nazwisk z zabezpieczeniem przed brakiem danych
+        const issNames = (d.names && d.names.iss && d.names.iss.length > 0) 
+            ? d.names.iss.join(", ") 
+            : "Brak danych o załodze ISS";
             
-            const issNames = (d.names && d.names.iss) ? d.names.iss.join(", ") : "Brak danych";
-            const tianNames = (d.names && d.names.tiangong) ? d.names.tiangong.join(", ") : "Brak danych";
+        const tianNames = (d.names && d.names.tiangong && d.names.tiangong.length > 0) 
+            ? d.names.tiangong.join(", ") 
+            : "Brak danych o załodze Tiangong";
 
-            document.getElementById('space-stats').innerHTML = `
-                ${peopleText}.
-                <details style="font-size:0.85em; margin-top:10px; color:#9ca3af;">
-                    <summary style="cursor:pointer; color:#fbbf24;">Kto jest na orbicie?</summary>
-                    <div style="padding-top:5px;"><b>ISS:</b> ${issNames}<br><b>Tiangong:</b> ${tianNames}</div>
-                </details>
-                <br>☄️ ${asteroidText}<br>🌌 Zdjęcie dnia od NASA:
-            `;
+        // --- AKTUALIZACJA HTML (Z sekcją rozwijaną) ---
+        document.getElementById('space-stats').innerHTML = `
+            <div style="margin-bottom: 10px;">${peopleText}.</div>
+            
+            <details style="font-size:0.85em; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                <summary style="cursor:pointer; color:#fbbf24; font-weight: bold;">👥 Kto dokładnie jest na orbicie?</summary>
+                <div style="padding-top:10px; color: #e5e7eb; line-height: 1.5;">
+                    <p style="margin: 5px 0;"><b>Stacja ISS:</b><br><span style="color: #9ca3af;">${issNames}</span></p>
+                    <p style="margin: 15px 0 5px 0;"><b>Stacja Tiangong:</b><br><span style="color: #9ca3af;">${tianNames}</span></p>
+                </div>
+            </details>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                ☄️ ${asteroidText}<br>
+                🌌 Zdjęcie dnia od NASA poniżej:
+            </div>
+        `;
 
             if (d.apod && d.apod.url) {
                 document.getElementById('apod-title').innerText = d.apod.title;
