@@ -82,8 +82,7 @@
 
     <h2 class="section-title">Nadchodzące fazy</h2>
     <div id="upcoming-phases" class="phases-grid"></div>
-
-
+    <div id="moon-guide-container" style="margin-top: 30px;"></div>
 
     <h2 class="section-title">Obserwacje 3D</h2>
     <div class="sky-map-card">
@@ -112,6 +111,18 @@
     
 
    <script>
+    const opisyFaz = {
+    "NEW_MOON": "Księżyc znajduje się między Ziemią a Słońcem. Jego oświetlona strona jest odwrócona od nas, przez co jest niemal niewidoczny.",
+    "WAXING_CRESCENT": "Pierwszy wąski sierp widoczny po nowiu. Z każdym dniem „przybywa” go na niebie.",
+    "FIRST_QUARTER": "Widoczna jest dokładnie prawa połowa tarczy. Księżyc pokonał jedną czwartą swojej drogi wokół Ziemi.",
+    "WAXING_GIBBOUS": "Tarcza jest oświetlona w ponad połowie i zbliża się do pełnego koła. Przybiera kształt wypukły.",
+    "FULL_MOON": "Cała tarcza Księżyca jest oświetlona przez Słońce. Widoczna przez całą noc, od zachodu do wschodu Słońca.",
+    "WANING_GIBBOUS": "Okres tuż po pełni. Oświetlona część zaczyna powoli maleć (ubywać) z prawej strony.",
+    "LAST_QUARTER": "Widoczna jest lewa połowa tarczy. Księżyc znajduje się w ostatniej fazie swojej miesięcznej drogi.",
+    "WANING_CRESCENT": "Ostatni cienki sierp przed kolejnym nowiem, widoczny głównie nad ranem przed wschodem Słońca."
+};
+
+
     const LAT = 52.2297; 
     const LON = 21.0122;
     const planetyPl = { "Mercury": "Merkury", "Venus": "Wenus", "Mars": "Mars", "Jupiter": "Jowisz", "Saturn": "Saturn", "Uranus": "Uran", "Neptune": "Neptun" };
@@ -158,10 +169,12 @@
         } catch (e) { container.innerHTML = "Błąd planet."; }
     }
 
-    async function fetchMoon() {
+   async function fetchMoon() {
         try {
             const res = await fetch('/api/get-moon');
             const d = await res.json();
+            
+            // 1. Podstawowe dane o aktualnej fazie
             const rawPhase = d.details.phase;
             document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
             document.getElementById('moon-img').src = "images/" + (plikiZdjec[rawPhase] || "NEW.jpg");
@@ -169,19 +182,75 @@
             document.getElementById('dist').innerText = d.details.distance;
             document.getElementById('rise').innerText = d.details.rise;
             document.getElementById('set').innerText = d.details.set;
+
+            // 2. Nadchodzące fazy (karty)
             const up = document.getElementById('upcoming-phases');
             up.innerHTML = '';
             d.upcoming.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'small-card';
-                card.innerHTML = `<div style="color:#34d399; font-size:0.75rem; font-weight:bold;">${p.daysText}</div><div style="font-size:0.85rem; margin:5px 0;">${p.date}</div><div style="font-weight:bold;">${nazwyFaz[p.name] || p.name}</div><img src="images/${plikiZdjec[p.name] || 'NEW.jpg'}" class="mini-moon">`;
+                card.innerHTML = `
+                    <div style="color:#34d399; font-size:0.75rem; font-weight:bold;">${p.daysText}</div>
+                    <div style="font-size:0.85rem; margin:5px 0;">${p.date}</div>
+                    <div style="font-weight:bold;">${nazwyFaz[p.name] || p.name}</div>
+                    <img src="images/${plikiZdjec[p.name] || 'NEW.jpg'}" class="mini-moon">
+                `;
                 up.appendChild(card);
             });
+
+            // 3. SEKCJA: OPIS WSZYSTKICH FAZ (PRZEWODNIK)
+            // Tworzymy kontener dynamicznie, jeśli jeszcze nie istnieje w HTML
+            let guideContainer = document.getElementById('moon-guide-container');
+            if (!guideContainer) {
+                guideContainer = document.createElement('div');
+                guideContainer.id = 'moon-guide-container';
+                guideContainer.style.marginTop = '30px';
+                // Wstawiamy pod nadchodzącymi fazami
+                document.getElementById('moon-content').appendChild(guideContainer);
+            }
+
+            const kolejnosc = ["NEW_MOON", "WAXING_CRESCENT", "FIRST_QUARTER", "WAXING_GIBBOUS", "FULL_MOON", "WANING_GIBBOUS", "LAST_QUARTER", "WANING_CRESCENT"];
+
+            let guideHTML = `
+                <details style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <summary style="cursor:pointer; color:#fbbf24; font-weight: bold; font-size: 1.1rem; list-style: none; outline: none;">
+                        📖 Przewodnik: Opis wszystkich faz Księżyca
+                    </summary>
+                    <div style="margin-top: 20px;">
+            `;
+
+            kolejnosc.forEach(faza => {
+                const nazwaEng = faza.replace('_', ' ');
+                const foto = plikiZdjec[faza] || "NEW.jpg";
+                const opis = opisyFaz[faza] || "Brak opisu dla tej fazy.";
+                
+                guideHTML += `
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
+                        <img src="images/${foto}" style="width: 50px; height: 50px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);">
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;">
+                                <strong style="color: #e5e7eb; font-size: 1rem;">${nazwyFaz[faza]}</strong>
+                                <span style="color: #6b7280; font-size: 0.7rem; font-family: monospace; text-transform: uppercase;">${nazwaEng}</span>
+                            </div>
+                            <div style="color: #9ca3af; font-size: 0.85rem; margin-top: 4px; line-height: 1.4;">${opis}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            guideHTML += `</div></details>`;
+            guideContainer.innerHTML = guideHTML;
+
+            // 4. Wyświetlenie zawartości
             document.getElementById('moon-loader').style.display = 'none';
             document.getElementById('moon-content').style.display = 'block';
-        } catch (e) { document.getElementById('moon-loader').innerText = "Błąd API Księżyca."; }
-    }
 
+        } catch (e) { 
+            console.error("Błąd Księżyca:", e);
+            document.getElementById('moon-loader').innerText = "Błąd API Księżyca."; 
+        }
+    }
+    
     async function fetchSpaceInfo() {
         try {
             const res = await fetch('/api/get-space-info');
