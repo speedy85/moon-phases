@@ -63,25 +63,40 @@
     <div class="container">
         <div class="card">
             <div id="moon-loader">Ładowanie...</div>
-                <div id="moon-content" style="display:none">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-bottom: 5px;">
-                            Aktualna faza księżyca
-                        </div>
-        
-                        <h2 id="phase-name" style="margin: 0; font-size: 2rem; color: #fff;">--</h2>
-                
-                        <img id="moon-img" src="" alt="Księżyc" style="width: 200px; margin: 20px 0;">
-        
-                        <div class="moon-details-grid">
-                            <div><span>Odległość:</span> <strong id="dist">--</strong></div>
-                            <div><span>Wschód:</span> <strong id="rise">--</strong></div>
-                            <div><span>Zachód:</span> <strong id="set">--</strong></div>
-                        </div> 
-                    </div>
+            <div id="moon-content" style="display:none">
+                <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-bottom: 5px;">
+                    Aktualna faza księżyca
                 </div>
-            </div>  
-        </div>
+
+                <h2 id="phase-name" style="margin: 0; font-size: 2rem; color: #fff;">--</h2>
+        
+                <img id="moon-img" src="" alt="Księżyc">
+
+                <style>
+                    .moon-details-grid {
+                        display: grid;
+                        grid-template-columns: 1fr;
+                        gap: 10px;
+                        margin-top: 20px;
+                        text-align: center;
+                    }
+                    .moon-details-grid div {
+                        background: rgba(255,255,255,0.05);
+                        padding: 8px;
+                        border-radius: 10px;
+                        font-size: 0.85rem;
+                    }
+                    .moon-details-grid span { color: #9ca3af; margin-right: 5px; }
+                    .moon-details-grid strong { color: #fbbf24; }
+                </style>
+
+                <div class="moon-details-grid">
+                    <div><span>Odległość:</span> <strong id="dist">--</strong></div>
+                    <div><span>Wschód:</span> <strong id="rise">--</strong></div>
+                    <div><span>Zachód:</span> <strong id="set">--</strong></div>
+                </div> 
+            </div>
+        </div>  
     </div>
 
     <h2 class="section-title">Widoczne Planety</h2>
@@ -89,29 +104,25 @@
 
     <h2 class="section-title">Nadchodzące fazy</h2>
     <div id="upcoming-phases" class="phases-grid"></div>
-    <div id="moon-guide-container" style="margin-top: 30px;"></div>
+    <div id="moon-guide-container" style="margin-top: 30px; width: 100%; max-width: 900px;"></div>
 
     <h2 class="section-title">Obserwacje 3D</h2>
     <div class="sky-map-card">
-    <div style="font-size: 3rem; margin-bottom: 15px;">🌌</div>
-    <h3 style="margin: 0 0 10px 0;">Interaktywna Mapa Stellarium</h3>
-    <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 20px;">
-        Otwórz pełnoekranowy widok nieba nad Warszawą, aby zlokalizować gwiazdy i konstelacje.
-    </p>
-    <a href="https://stellarium-web.org/" 
-       target="_blank" 
-       class="map-button">
-        URUCHOM MAPĘ NIEBA
-    </a>
+        <div style="font-size: 3rem; margin-bottom: 15px;">🌌</div>
+        <h3 style="margin: 0 0 10px 0;">Interaktywna Mapa Stellarium</h3>
+        <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 20px;">
+            Otwórz pełnoekranowy widok nieba nad Warszawą, aby zlokalizować gwiazdy i konstelacje.
+        </p>
+        <a href="https://stellarium-web.org/" target="_blank" class="map-button">URUCHOM MAPĘ NIEBA</a>
     </div>
 
     <h2 class="section-title">Centrum Dowodzenia Kosmicznego</h2>
-    <div class="card" style="max-width: 800px; margin-bottom: 20px; text-align: left;">
-    <p id="space-stats" style="line-height: 1.6;">Ładowanie ciekawostek z orbity...</p>
-    <div id="apod-container" style="margin-top: 20px; display: none;">
-        <h4 id="apod-title" style="margin-bottom: 10px; color: #fbbf24;"></h4>
-        <img id="apod-img" src="" style="width: 100%; border-radius: 10px; border: 1px solid #374151;">
-    </div>
+    <div class="card" style="width: 100%; max-width: 850px; margin: 0 auto 50px auto; text-align: left;">
+        <p id="space-stats" style="line-height: 1.6;">Ładowanie ciekawostek z orbity...</p>
+        <div id="apod-container" style="margin-top: 20px; display: none;">
+            <h4 id="apod-title" style="margin-bottom: 10px; color: #fbbf24;"></h4>
+            <img id="apod-img" src="" style="width: 100%; border-radius: 10px; border: 1px solid #374151;">
+        </div>
     </div>
 
 
