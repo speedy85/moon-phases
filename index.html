@@ -62,18 +62,25 @@
 
     <div class="container">
         <div class="card">
-            <h2>Aktualny Księżyc</h2>
             <div id="moon-loader">Ładowanie...</div>
-            <div id="moon-content" style="display:none">
-                <div id="phase-name" style="font-size: 1.4rem; font-weight: bold;">-</div>
-                <img id="moon-img" src="" alt="Księżyc">
-                <div class="grid">
-                    <div class="item"><span class="label">Oświetlenie</span><span class="value" id="illu">-</span></div>
-                    <div class="item"><span class="label">Wschód</span><span class="value" id="rise">-</span></div>
-                    <div class="item"><span class="label">Zachód</span><span class="value" id="set">-</span></div>
-                    <div class="item"><span class="label">Dystans</span><span class="value" id="dist">-</span></div>
+                <div id="moon-content" style="display:none">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-bottom: 5px;">
+                            Aktualna faza księżyca
+                        </div>
+        
+                        <h2 id="phase-name" style="margin: 0; font-size: 2rem; color: #fff;">--</h2>
+                
+                        <img id="moon-img" src="" alt="Księżyc" style="width: 200px; margin: 20px 0;">
+        
+                        <div class="moon-details-grid">
+                            <div><span>Odległość:</span> <strong id="dist">--</strong></div>
+                            <div><span>Wschód:</span> <strong id="rise">--</strong></div>
+                            <div><span>Zachód:</span> <strong id="set">--</strong></div>
+                        </div> 
+                    </div>
                 </div>
-            </div>
+            </div>  
         </div>
     </div>
 
@@ -178,7 +185,7 @@
             const rawPhase = d.details.phase;
             document.getElementById('phase-name').innerText = nazwyFaz[rawPhase] || rawPhase;
             document.getElementById('moon-img').src = "images/" + (plikiZdjec[rawPhase] || "NEW.jpg");
-            document.getElementById('illu').innerText = d.details.illumination;
+            //document.getElementById('illu').innerText = d.details.illumination;
             document.getElementById('dist').innerText = d.details.distance;
             document.getElementById('rise').innerText = d.details.rise;
             document.getElementById('set').innerText = d.details.set;
